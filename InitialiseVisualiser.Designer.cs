@@ -62,7 +62,7 @@
             btnInitialiseApp.TabIndex = 1;
             btnInitialiseApp.Text = "Proceed to Visualiser";
             btnInitialiseApp.UseVisualStyleBackColor = true;
-            btnInitialiseApp.Click += btnInitialiseApp_Click;
+            btnInitialiseApp.Click += BtnInitialiseApp_Click;
             // 
             // label2
             // 

@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MandelbrotSet
+﻿namespace MandelbrotSet
 {
     internal class CurrentState
     {
         public Bitmap View; //saving the image of the previous view (interesting caching experiment)
 
         public PointF TopLeftScaledCoord;
-        public PointF TopRightScaledCoord;
-        public PointF BottomLeftScaledCoord;
         public PointF BottomRightScaledCoord;
 
-
+        public CurrentState(Bitmap View, PointF TL, PointF BR)
+        {
+            this.View = View;
+            this.TopLeftScaledCoord = new PointF() { X = TL.X, Y = TL.Y };
+            this.BottomRightScaledCoord = new PointF() { X = BR.X, Y = BR.Y };
+        }
     }
 }

@@ -15,7 +15,7 @@ namespace MandelbrotSet
         }
 
 
-        private void btnInitialiseApp_Click(object sender, EventArgs e)
+        private void BtnInitialiseApp_Click(object sender, EventArgs e)
         {
             this.Close();
         }
@@ -24,8 +24,8 @@ namespace MandelbrotSet
         private readonly Color[] BkgColours = new Color[] { Color.FromArgb(44, 62, 80), Color.FromArgb(52, 152, 219) };
         private void SetControlGradient(Control control, Color[] colors)
         {
-            ColorBlend colorBlend = new ColorBlend() { Colors = colors, Positions = CalculateGradientPositions(colors.Length) };
-            LinearGradientBrush linearGradientBrush = new LinearGradientBrush(control.ClientRectangle, Color.Black, Color.Black, LinearGradientMode.ForwardDiagonal) { InterpolationColors = colorBlend };
+            ColorBlend colorBlend = new() { Colors = colors, Positions = CalculateGradientPositions(colors.Length) };
+            LinearGradientBrush linearGradientBrush = new(control.ClientRectangle, Color.Black, Color.Black, LinearGradientMode.ForwardDiagonal) { InterpolationColors = colorBlend };
             control.BackgroundImage = new Bitmap(1, 1);
             control.BackgroundImage = DrawToBitmap(linearGradientBrush, control.ClientRectangle.Size);
             control.ForeColor = Color.DodgerBlue;
@@ -42,7 +42,7 @@ namespace MandelbrotSet
 
         private Bitmap DrawToBitmap(Brush brush, Size size)
         {
-            Bitmap bitmap = new Bitmap(size.Width, size.Height);
+            Bitmap bitmap = new(size.Width, size.Height);
             using (Graphics g = Graphics.FromImage(bitmap))
             {
                 g.FillRectangle(brush, new Rectangle(Point.Empty, size));

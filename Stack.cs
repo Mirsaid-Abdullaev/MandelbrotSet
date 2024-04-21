@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MandelbrotSet
+﻿namespace MandelbrotSet
 {
     internal class Stack<T>
     {
@@ -26,7 +20,7 @@ namespace MandelbrotSet
             }
         }
 
-        private List<T> Values;
+        private T[] Values;
 
         public Stack(bool FixedSize = false, int MaxSize = 250)
         {
@@ -39,22 +33,25 @@ namespace MandelbrotSet
                 this.MaxSize = -1;
             }
 
-            Values = new List<T>();
+            Values = Array.Empty<T>();
             Size = 0;
         }
 
-        public T? Pop()
+        public T Pop()
         {
             if (Size > 0)
             {
                 T Result = Values.Last();
-                Values.RemoveAt(Values.Count - 1);
+                T[] Temp = new T[Values.Length];
+                Array.Copy(Values, Temp, Values.Length);
+                Values = new T[Temp.Length - 1];
+                Array.Copy(Temp,0,Values,0,Values.Length);
                 Size--;
                 return Result;
             }
             else //empty stack
             {
-                return default;
+                throw new Exception("Error: stack is empty, nothing to pop.");
             }
         }
 
@@ -66,12 +63,16 @@ namespace MandelbrotSet
             }
             else
             {
-                Values.Add(Item);
+                T[] Temp = new T[Values.Length];
+                Array.Copy(Values, Temp, Values.Length);
+                Values = new T[Values.Length + 1];
+                Array.Copy(Temp, Values, Temp.Length);
+                Values[^1] = Item;
                 Size++;
             }
         }
 
-        public T? Peek()
+        public T Peek()
         {
             if (Size > 0)
             {
@@ -80,7 +81,7 @@ namespace MandelbrotSet
             }
             else //empty stack
             {
-                return default;
+                throw new Exception("Error: empty stack, nothing to peek)");
             }
         }
 
@@ -89,5 +90,24 @@ namespace MandelbrotSet
             return Values.ToList();
         }
 
+        public void ForgetFirstNItems(int FirstNItems)
+        {
+            if (Size >= FirstNItems)
+            {
+                T[] Temp = new T[Values.Length - FirstNItems];
+                Array.Copy(Values, FirstNItems, Temp, 0, Temp.Length);
+                Values = new T[Temp.Length];
+                Array.Copy(Temp, Values, Temp.Length);
+            }
+            else
+            {
+                throw new ArgumentException("Error: stack does not contain that many items.");
+            }
+        }
+
+        public override string ToString()
+        {
+            return "{" + string.Join(',', Values) + "}";
+        }
     }
 }

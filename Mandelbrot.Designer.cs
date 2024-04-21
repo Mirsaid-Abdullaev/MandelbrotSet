@@ -32,13 +32,14 @@
             btnPanMode = new Button();
             btnUndoView = new Button();
             btnSaveJPG = new Button();
+            btnClear = new Button();
             SuspendLayout();
             // 
             // lblMousePos
             // 
             lblMousePos.AutoSize = true;
             lblMousePos.Font = new Font("Bahnschrift", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            lblMousePos.Location = new Point(2, 584);
+            lblMousePos.Location = new Point(12, 619);
             lblMousePos.Name = "lblMousePos";
             lblMousePos.Size = new Size(90, 19);
             lblMousePos.TabIndex = 0;
@@ -47,27 +48,29 @@
             // btnPanMode
             // 
             btnPanMode.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnPanMode.Location = new Point(630, 576);
+            btnPanMode.Location = new Point(654, 611);
             btnPanMode.Name = "btnPanMode";
             btnPanMode.Size = new Size(80, 27);
             btnPanMode.TabIndex = 4;
             btnPanMode.Text = "Pan Mode";
             btnPanMode.UseVisualStyleBackColor = true;
+            btnPanMode.Click += btnPanMode_Click;
             // 
             // btnUndoView
             // 
             btnUndoView.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnUndoView.Location = new Point(716, 576);
+            btnUndoView.Location = new Point(740, 611);
             btnUndoView.Name = "btnUndoView";
             btnUndoView.Size = new Size(84, 27);
             btnUndoView.TabIndex = 5;
             btnUndoView.Text = "Undo/Go Back";
             btnUndoView.UseVisualStyleBackColor = true;
+            btnUndoView.Click += btnUndoView_Click;
             // 
             // btnSaveJPG
             // 
             btnSaveJPG.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnSaveJPG.Location = new Point(544, 576);
+            btnSaveJPG.Location = new Point(568, 611);
             btnSaveJPG.Name = "btnSaveJPG";
             btnSaveJPG.Size = new Size(80, 27);
             btnSaveJPG.TabIndex = 6;
@@ -75,11 +78,23 @@
             btnSaveJPG.UseVisualStyleBackColor = true;
             btnSaveJPG.Click += btnSaveJPG_Click;
             // 
+            // btnClear
+            // 
+            btnClear.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
+            btnClear.Location = new Point(482, 611);
+            btnClear.Name = "btnClear";
+            btnClear.Size = new Size(80, 27);
+            btnClear.TabIndex = 7;
+            btnClear.Text = "Clear Screen";
+            btnClear.UseVisualStyleBackColor = true;
+            btnClear.Click += btnClear_Click;
+            // 
             // Mandelbrot
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(801, 603);
+            ClientSize = new Size(836, 650);
+            Controls.Add(btnClear);
             Controls.Add(btnSaveJPG);
             Controls.Add(btnUndoView);
             Controls.Add(btnPanMode);
@@ -90,7 +105,9 @@
             Text = "Mandelbrot";
             Load += Mandelbrot_Load;
             Click += Mandelbrot_Click;
+            MouseDown += Mandelbrot_MouseDown;
             MouseMove += Mandelbrot_MouseMove;
+            MouseUp += Mandelbrot_MouseUp;
             ResumeLayout(false);
             PerformLayout();
         }
@@ -103,5 +120,6 @@
         private Button btnPanMode;
         private Button btnUndoView;
         private Button btnSaveJPG;
+        private Button btnClear;
     }
 }
