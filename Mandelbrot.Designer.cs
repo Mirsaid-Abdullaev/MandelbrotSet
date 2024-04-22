@@ -39,7 +39,7 @@
             // 
             lblMousePos.AutoSize = true;
             lblMousePos.Font = new Font("Bahnschrift", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            lblMousePos.Location = new Point(12, 619);
+            lblMousePos.Location = new Point(0, 627);
             lblMousePos.Name = "lblMousePos";
             lblMousePos.Size = new Size(90, 19);
             lblMousePos.TabIndex = 0;
@@ -48,7 +48,7 @@
             // btnPanMode
             // 
             btnPanMode.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnPanMode.Location = new Point(654, 611);
+            btnPanMode.Location = new Point(642, 619);
             btnPanMode.Name = "btnPanMode";
             btnPanMode.Size = new Size(80, 27);
             btnPanMode.TabIndex = 4;
@@ -59,7 +59,7 @@
             // btnUndoView
             // 
             btnUndoView.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnUndoView.Location = new Point(740, 611);
+            btnUndoView.Location = new Point(728, 619);
             btnUndoView.Name = "btnUndoView";
             btnUndoView.Size = new Size(84, 27);
             btnUndoView.TabIndex = 5;
@@ -70,7 +70,7 @@
             // btnSaveJPG
             // 
             btnSaveJPG.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnSaveJPG.Location = new Point(568, 611);
+            btnSaveJPG.Location = new Point(556, 619);
             btnSaveJPG.Name = "btnSaveJPG";
             btnSaveJPG.Size = new Size(80, 27);
             btnSaveJPG.TabIndex = 6;
@@ -81,7 +81,7 @@
             // btnClear
             // 
             btnClear.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnClear.Location = new Point(482, 611);
+            btnClear.Location = new Point(470, 619);
             btnClear.Name = "btnClear";
             btnClear.Size = new Size(80, 27);
             btnClear.TabIndex = 7;
@@ -93,7 +93,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(836, 650);
+            ClientSize = new Size(825, 650);
             Controls.Add(btnClear);
             Controls.Add(btnSaveJPG);
             Controls.Add(btnUndoView);

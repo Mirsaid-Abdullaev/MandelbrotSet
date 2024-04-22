@@ -157,8 +157,8 @@ namespace MandelbrotSet
         {
             if (VisualiserArea.Contains(e.Location) && !IsComputing)
             {
-                int X = e.X + 10;
-                int Y = e.Y + 10;
+                int X = e.X - 10;
+                int Y = e.Y - 10;
                 lblMousePos.Text = $"Mouse Position: ({(float)X / (float)this.VisualiserArea.Width * (BottomRightScaledCoord.X - TopLeftScaledCoord.X) + TopLeftScaledCoord.X}, {(float)(this.VisualiserArea.Height - Y) / (float)this.VisualiserArea.Height * (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) + BottomRightScaledCoord.Y})";
             }
         }
@@ -206,7 +206,7 @@ namespace MandelbrotSet
                 TopLeftScaledCoord = previousState.TopLeftScaledCoord;
                 BottomRightScaledCoord = previousState.BottomRightScaledCoord;
                 using Graphics g = this.CreateGraphics();
-                g.DrawImage(previousState.View, this.ClientRectangle);
+                g.DrawImage(previousState.View, this.VisualiserArea);
             }
         }
         private void btnPanMode_Click(object sender, EventArgs e)
@@ -220,7 +220,7 @@ namespace MandelbrotSet
             else
             {
                 InPanMode = true;
-                btnPanMode.BackColor = Color.LightYellow;
+                btnPanMode.BackColor = Color.Blue;
                 this.Cursor = Cursors.SizeAll;
             }
         }
@@ -233,52 +233,6 @@ namespace MandelbrotSet
                 StartedPanPoint = e.Location;
             }
         }
-
-        private void PaintSections(object parameters)
-        {
-            object[] paramsArray = (object[]) parameters;
-            Bitmap Result = (Bitmap) paramsArray[0];
-            int Direction = (int)paramsArray[1];
-            Rectangle NewArea1 = (Rectangle)paramsArray[2];
-            Rectangle NewArea2;
-            if (Direction < 5)
-            {
-                NewArea2 = (Rectangle)paramsArray[3];
-            }
-            using Graphics g = Graphics.FromImage(Result);
-            using Graphics form_g = this.CreateGraphics();
-            using SolidBrush solidBrush = new(Color.Black);
-            switch (Direction)
-            {
-                case 1: //SE
-                    for (int i = YRes - (VisualiserArea.Height - pany) * YRes/VisualiserArea.Height + 1; i >= 0; i--)
-                    {
-                        for (int j =0; j < XRes; j++)
-                        {
-                            solidBrush.Color = GetGreyscaleColor(InMandelbrot[i][j]);
-                            g.FillRectangle(solidBrush, Pixels[i][j]);
-                        }
-                    }
-                    for (int i = YRes - 1; i >= YRes - (VisualiserArea.Height - pany) * YRes / VisualiserArea.Height + 1; i--)
-                    {
-                        for (int j = 0; j < panx/VisualiserArea.Width + 2; j++)
-                        {
-                            solidBrush.Color = GetGreyscaleColor(InMandelbrot[i][j]);
-                            g.FillRectangle(solidBrush, Pixels[i][j]);
-                        }
-                    }
-                    form_g.DrawImage(Result, this.VisualiserArea);
-                    return;
-                //case 2: //NE
-                //case 3: //NW
-                //case 4: //SW
-                //case 5: //W
-                //case 6: //E
-                //case 7: //S
-                //case 8: //N
-            }
-        }
-
 
         private void Mandelbrot_MouseUp(object sender, MouseEventArgs e)
         {
@@ -295,7 +249,7 @@ namespace MandelbrotSet
                 if (panx == 0 && pany == 0) //both are 0
                 {
                     IsComputing = false;
-                    this.Cursor = Cursors.Default;
+                    this.Cursor = Cursors.SizeAll;
                     return;
                 }
 
@@ -304,180 +258,90 @@ namespace MandelbrotSet
 
                 if (panx > 0 && pany > 0) //SE direction
                 {
-                    //Rectangle NewArea1 = new Rectangle(0, 0, VisualiserArea.Width, pany);
-                    //Rectangle NewArea2 = new Rectangle(0, pany, panx, VisualiserArea.Height - pany);
-
-                    //Rectangle DestArea = new Rectangle(panx, pany, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
-                    //Rectangle SrcArea = new Rectangle(0, 0, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
-
                     TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X - (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)panx / VisualiserArea.Width, 
-                                                    TopLeftScaledCoord.Y + (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)pany / VisualiserArea.Height);
+                                                    TopLeftScaledCoord.Y - (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)pany / VisualiserArea.Height);
                     BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
 
-                    Bitmap new_view = new Bitmap(VisualiserArea.Width, VisualiserArea.Height);
-                    //Bitmap old_view = ViewStack.Peek().View;
+                   
 
-                    using Graphics new_g = Graphics.FromImage(new_view);
-                    //new_g.DrawImage(old_view, DestArea, SrcArea, GraphicsUnit.Pixel); //copying the correct section of the old bitmap into the new one
-
-                    for (int i = YRes - 1; i >= 0; i--)
-                    {
-                        ScaledCoords[i] = new PointF[XRes];
-                        InMandelbrot[i] = new double[XRes];
-
-                        for (int j = 0; j < XRes; j++)
-                        {
-                            ScaledCoords[i][j] = new PointF(TopLeftScaledCoord.X + (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)(1 + 2 * j) / (float)(2 * XRes),
-                                                            BottomRightScaledCoord.Y + (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)(1 + 2 * i) / (float)(2 * YRes));
-                            InMandelbrot[i][j] = GetSmoothEscapeCount(ScaledCoords[i][j]);
-                        }
-                    } //recalculating the centres of each "pixel" area's actual coordinates and the colours
-
-                    bkgDrawThread = new Thread(PaintArea) { IsBackground = true };
-                    bkgDrawThread.Start();
-
-                    bkgDrawThread.Join();
-                    IsComputing = false;
-                    this.Cursor = Cursors.Default;
-                    return;
                 }
                 if (panx > 0 && pany < 0) //NE direction 
                 {
                     pany = Math.Abs(pany);
 
-                    Rectangle NewArea1 = new Rectangle(0, 0, panx, VisualiserArea.Height - pany);
-                    Rectangle NewArea2 = new Rectangle(0, VisualiserArea.Height - pany, VisualiserArea.Width, pany);
-
-                    Rectangle DestArea = new Rectangle(panx, pany, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
-                    Rectangle SrcArea = new Rectangle(0, 0, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
-
                     TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X - (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)panx / VisualiserArea.Width,
-                                                    TopLeftScaledCoord.Y - (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)pany / VisualiserArea.Height);
+                                                    TopLeftScaledCoord.Y + (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)pany / VisualiserArea.Height);
                     BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
-
-                    Bitmap new_view = new Bitmap(VisualiserArea.Width, VisualiserArea.Height);
-                    Bitmap old_view = ViewStack.Peek().View;
-
-                    using Graphics new_g = Graphics.FromImage(new_view);
-                    new_g.DrawImage(old_view, DestArea, SrcArea, GraphicsUnit.Pixel); //copying the correct section of the old bitmap into the new one
 
                 }
                 if (panx < 0 && pany < 0) //NW direction
                 {
                     panx = Math.Abs(panx);
                     pany = Math.Abs(pany);
-
-                    Rectangle NewArea1 = new Rectangle(VisualiserArea.X - panx, 0, panx, VisualiserArea.Height - pany);
-                    Rectangle NewArea2 = new Rectangle(0, VisualiserArea.Height - pany, VisualiserArea.Width, pany);
-
-                    Rectangle DestArea = new Rectangle(panx, pany, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
-                    Rectangle SrcArea = new Rectangle(0, 0, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
-
                     TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X + (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)panx / VisualiserArea.Width,
-                                                    TopLeftScaledCoord.Y - (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)pany / VisualiserArea.Height);
+                                                    TopLeftScaledCoord.Y + (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)pany / VisualiserArea.Height);
                     BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
-
-                    Bitmap new_view = new Bitmap(VisualiserArea.Width, VisualiserArea.Height);
-                    Bitmap old_view = ViewStack.Peek().View;
-
-                    using Graphics new_g = Graphics.FromImage(new_view);
-                    new_g.DrawImage(old_view, DestArea, SrcArea, GraphicsUnit.Pixel); //copying the correct section of the old bitmap into the new one
-
 
                 }
                 if (panx < 0 && pany > 0) //SW direction
                 {
                     panx = Math.Abs(panx);
 
-                    Rectangle NewArea1 = new Rectangle(0, 0, VisualiserArea.Width, pany);
-                    Rectangle NewArea2 = new Rectangle(VisualiserArea.Width - panx, pany, panx, VisualiserArea.Height - pany);
-
-                    Rectangle DestArea = new Rectangle(panx, pany, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
-                    Rectangle SrcArea = new Rectangle(0, 0, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
-
-                    TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X - (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)panx / VisualiserArea.Width,
+                    TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X + (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)panx / VisualiserArea.Width,
                                                     TopLeftScaledCoord.Y - (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)pany / VisualiserArea.Height);
                     BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
-
-                    Bitmap new_view = new Bitmap(VisualiserArea.Width, VisualiserArea.Height);
-                    Bitmap old_view = ViewStack.Peek().View;
-
-                    using Graphics new_g = Graphics.FromImage(new_view);
-                    new_g.DrawImage(old_view, DestArea, SrcArea, GraphicsUnit.Pixel); //copying the correct section of the old bitmap into the new one
-
                 }
                 if (panx > 0 && pany == 0) //E direction
                 {
-                    Rectangle NewArea1 = new Rectangle(0, 0, panx, VisualiserArea.Height);
-
-                    Rectangle DestArea = new Rectangle(panx, pany, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
-                    Rectangle SrcArea = new Rectangle(0, 0, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
-
                     TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X - (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)panx / VisualiserArea.Width,
                                                     TopLeftScaledCoord.Y);
                     BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
-
-                    Bitmap new_view = new Bitmap(VisualiserArea.Width, VisualiserArea.Height);
-                    Bitmap old_view = ViewStack.Peek().View;
-
-                    using Graphics new_g = Graphics.FromImage(new_view);
-                    new_g.DrawImage(old_view, DestArea, SrcArea, GraphicsUnit.Pixel); //copying the correct section of the old bitmap into the new one
 
                 }
                 if (panx < 0 && pany == 0) //W direction
                 {
-                    Rectangle NewArea1 = new Rectangle(VisualiserArea.Width - panx, 0, panx, VisualiserArea.Height);
-
-                    Rectangle DestArea = new Rectangle(panx, pany, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
-                    Rectangle SrcArea = new Rectangle(0, 0, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
+                    panx = Math.Abs(panx);
 
                     TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X + (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)panx / VisualiserArea.Width,
                                                     TopLeftScaledCoord.Y);
                     BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
-
-                    Bitmap new_view = new Bitmap(VisualiserArea.Width, VisualiserArea.Height);
-                    Bitmap old_view = ViewStack.Peek().View;
-
-                    using Graphics new_g = Graphics.FromImage(new_view);
-                    new_g.DrawImage(old_view, DestArea, SrcArea, GraphicsUnit.Pixel); //copying the correct section of the old bitmap into the new one
-
                 }
                 if (panx == 0 && pany < 0) //N direction
                 {
-                    Rectangle NewArea1 = new Rectangle(0, VisualiserArea.Width - pany, VisualiserArea.Width, pany);
-
-                    Rectangle DestArea = new Rectangle(panx, pany, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
-                    Rectangle SrcArea = new Rectangle(0, 0, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
+                    pany = Math.Abs(pany);
 
                     TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X,
                                                     TopLeftScaledCoord.Y + (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)pany / VisualiserArea.Height);
                     BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
 
-                    Bitmap new_view = new Bitmap(VisualiserArea.Width, VisualiserArea.Height);
-                    Bitmap old_view = ViewStack.Peek().View;
-
-                    using Graphics new_g = Graphics.FromImage(new_view);
-                    new_g.DrawImage(old_view, DestArea, SrcArea, GraphicsUnit.Pixel); //copying the correct section of the old bitmap into the new one
-
                 }
                 if (panx == 0 && pany > 0) //S direction
                 {
-                    Rectangle NewArea1 = new Rectangle(0, 0, VisualiserArea.Width, pany);
-
-                    Rectangle DestArea = new Rectangle(panx, pany, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
-                    Rectangle SrcArea = new Rectangle(0, 0, VisualiserArea.Width - panx, VisualiserArea.Height - pany);
-
                     TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X,
                                                     TopLeftScaledCoord.Y - (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)pany / VisualiserArea.Height);
                     BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
-
-                    Bitmap new_view = new Bitmap(VisualiserArea.Width, VisualiserArea.Height);
-                    Bitmap old_view = ViewStack.Peek().View;
-
-                    using Graphics new_g = Graphics.FromImage(new_view);
-                    new_g.DrawImage(old_view, DestArea, SrcArea, GraphicsUnit.Pixel); //copying the correct section of the old bitmap into the new one
-
                 }
+
+                for (int i = YRes - 1; i >= 0; i--)
+                {
+                    ScaledCoords[i] = new PointF[XRes];
+                    InMandelbrot[i] = new double[XRes];
+
+                    for (int j = 0; j < XRes; j++)
+                    {
+                        ScaledCoords[i][j] = new PointF(TopLeftScaledCoord.X + (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)(1 + 2 * j) / (float)(2 * XRes),
+                                                        BottomRightScaledCoord.Y + (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)(1 + 2 * i) / (float)(2 * YRes));
+                        InMandelbrot[i][j] = GetSmoothEscapeCount(ScaledCoords[i][j]);
+                    }
+                } //recalculating the centres of each "pixel" area's actual coordinates and the colours
+                bkgDrawThread = new Thread(PaintArea) { IsBackground = true };
+                bkgDrawThread.Start();
+
+                bkgDrawThread.Join();
+                IsComputing = false;
+                this.Cursor = Cursors.SizeAll;
+                return;
+
             }
         }
     }
