@@ -33,13 +33,15 @@
             btnUndoView = new Button();
             btnSaveJPG = new Button();
             btnClear = new Button();
+            btnZoomMode = new Button();
+            btnDefaultView = new Button();
             SuspendLayout();
             // 
             // lblMousePos
             // 
             lblMousePos.AutoSize = true;
             lblMousePos.Font = new Font("Bahnschrift", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            lblMousePos.Location = new Point(0, 627);
+            lblMousePos.Location = new Point(3, 609);
             lblMousePos.Name = "lblMousePos";
             lblMousePos.Size = new Size(90, 19);
             lblMousePos.TabIndex = 0;
@@ -48,9 +50,9 @@
             // btnPanMode
             // 
             btnPanMode.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnPanMode.Location = new Point(642, 619);
+            btnPanMode.Location = new Point(819, 76);
             btnPanMode.Name = "btnPanMode";
-            btnPanMode.Size = new Size(80, 27);
+            btnPanMode.Size = new Size(84, 27);
             btnPanMode.TabIndex = 4;
             btnPanMode.Text = "Pan Mode";
             btnPanMode.UseVisualStyleBackColor = true;
@@ -59,7 +61,7 @@
             // btnUndoView
             // 
             btnUndoView.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnUndoView.Location = new Point(728, 619);
+            btnUndoView.Location = new Point(819, 175);
             btnUndoView.Name = "btnUndoView";
             btnUndoView.Size = new Size(84, 27);
             btnUndoView.TabIndex = 5;
@@ -70,9 +72,9 @@
             // btnSaveJPG
             // 
             btnSaveJPG.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnSaveJPG.Location = new Point(556, 619);
+            btnSaveJPG.Location = new Point(819, 43);
             btnSaveJPG.Name = "btnSaveJPG";
-            btnSaveJPG.Size = new Size(80, 27);
+            btnSaveJPG.Size = new Size(84, 27);
             btnSaveJPG.TabIndex = 6;
             btnSaveJPG.Text = "Save to JPG";
             btnSaveJPG.UseVisualStyleBackColor = true;
@@ -81,19 +83,43 @@
             // btnClear
             // 
             btnClear.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnClear.Location = new Point(470, 619);
+            btnClear.Location = new Point(819, 10);
             btnClear.Name = "btnClear";
-            btnClear.Size = new Size(80, 27);
+            btnClear.Size = new Size(84, 27);
             btnClear.TabIndex = 7;
             btnClear.Text = "Clear Screen";
             btnClear.UseVisualStyleBackColor = true;
             btnClear.Click += btnClear_Click;
             // 
+            // btnZoomMode
+            // 
+            btnZoomMode.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
+            btnZoomMode.Location = new Point(819, 109);
+            btnZoomMode.Name = "btnZoomMode";
+            btnZoomMode.Size = new Size(84, 27);
+            btnZoomMode.TabIndex = 8;
+            btnZoomMode.Text = "Zoom Mode";
+            btnZoomMode.UseVisualStyleBackColor = true;
+            btnZoomMode.Click += btnZoomMode_Click;
+            // 
+            // btnDefaultView
+            // 
+            btnDefaultView.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
+            btnDefaultView.Location = new Point(819, 142);
+            btnDefaultView.Name = "btnDefaultView";
+            btnDefaultView.Size = new Size(84, 27);
+            btnDefaultView.TabIndex = 9;
+            btnDefaultView.Text = "Default View";
+            btnDefaultView.UseVisualStyleBackColor = true;
+            btnDefaultView.Click += btnDefaultView_Click;
+            // 
             // Mandelbrot
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(825, 650);
+            ClientSize = new Size(911, 630);
+            Controls.Add(btnDefaultView);
+            Controls.Add(btnZoomMode);
             Controls.Add(btnClear);
             Controls.Add(btnSaveJPG);
             Controls.Add(btnUndoView);
@@ -104,7 +130,6 @@
             Name = "Mandelbrot";
             Text = "Mandelbrot";
             Load += Mandelbrot_Load;
-            Click += Mandelbrot_Click;
             MouseDown += Mandelbrot_MouseDown;
             MouseMove += Mandelbrot_MouseMove;
             MouseUp += Mandelbrot_MouseUp;
@@ -121,5 +146,7 @@
         private Button btnUndoView;
         private Button btnSaveJPG;
         private Button btnClear;
+        private Button btnZoomMode;
+        private Button btnDefaultView;
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace MandelbrotSet
+﻿namespace MandelbrotSet.Utils
 {
     internal class Stack<T>
     {
@@ -45,7 +45,7 @@
                 T[] Temp = new T[Values.Length];
                 Array.Copy(Values, Temp, Values.Length);
                 Values = new T[Temp.Length - 1];
-                Array.Copy(Temp,0,Values,0,Values.Length);
+                Array.Copy(Temp, 0, Values, 0, Values.Length);
                 Size--;
                 return Result;
             }

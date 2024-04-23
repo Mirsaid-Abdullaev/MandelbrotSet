@@ -27,7 +27,7 @@ namespace MandelbrotSet
             //}
             //initialiseVisualiser.Dispose();
 
-            Mandelbrot mandelbrotViewer = new Mandelbrot(1000, 200);
+            Mandelbrot mandelbrotViewer = new(100);
             Application.Run(mandelbrotViewer);
 
           

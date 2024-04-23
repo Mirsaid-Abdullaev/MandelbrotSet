@@ -1,182 +1,126 @@
 ﻿using System.Drawing.Imaging;
 using System.Drawing;
 using System.Windows.Forms;
+using MandelbrotSet.Utils;
 
 namespace MandelbrotSet
 {
     public partial class Mandelbrot : Form
     {
-        private readonly int XRes;
-        private readonly int YRes;
-
-        private PointF TopLeftScaledCoord;
-        private PointF BottomRightScaledCoord;
+        private Bitmap MandelBitmap;
+        private ScaledToPixelTranslator? CoordsTranslator;
+        private int MaxIter;
+        private ComplexNumber TopRight;
+        private ComplexNumber BottomLeft;
         private Rectangle VisualiserArea;
-
+        private Graphics BitmapG;
+        private ColourLookupTable ColourTable;
         private bool IsComputing;
-
         private bool InPanMode;
+        private bool InZoomMode;
         private bool IsPanning;
+        private bool IsZooming;
         private Point StartedPanPoint;
         private Point StoppedPanPoint;
         private int panx;
         private int pany;
+        private Utils.Stack<CurrentState> ViewStack;
 
-        private Thread? bkgDrawThread;
 
-
-        private double[][] InMandelbrot;
-        private PointF[][] ScaledCoords;
-        private RectangleF[][] Pixels;
-
-        private readonly int MaxIter;
-
-        private Stack<CurrentState> ViewStack;
-
-        public Mandelbrot(int Resolution, int MaxIter)
+        public Mandelbrot(int MaxIter)
         {
             InitializeComponent();
-
-            this.XRes = Resolution;
-            this.YRes = (int)((double)XRes / (double)1.6); //to preserve the same 8:5 aspect ratio
-
             this.MaxIter = MaxIter;
-
-            bkgDrawThread = new Thread(PaintArea) { IsBackground = true };
-
-            InMandelbrot = new double[YRes][]; //will be an array of resolution x 5/8 resolution representing all the pixel areas of the screen
-
-            ScaledCoords = new PointF[YRes][];
-
-            TopLeftScaledCoord = new PointF((float)-2, (float)2);
-            BottomRightScaledCoord = new PointF((float)2, (float)-2);
             VisualiserArea = new Rectangle(10, 10, 800, 600);
 
-            Pixels = new RectangleF[YRes][];
+            MandelBitmap = new Bitmap(VisualiserArea.Width, VisualiserArea.Height, PixelFormat.Format24bppRgb);
+            BitmapG = Graphics.FromImage(MandelBitmap);
+            BitmapG.Clear(Color.White);
 
-            ViewStack = new Stack<CurrentState>();
-            //initial coordinate map will be the area bounded by these coordinates, the centre of the mandelbrot set.
+            TopRight = new ComplexNumber(2, 1.5);
+            BottomLeft = new ComplexNumber(-2, -1.5);
+            CoordsTranslator = null;
+            ColourTable = new ColourLookupTable(MaxIter);
+            ViewStack = new Utils.Stack<CurrentState>();
         }
 
 
         private void Mandelbrot_Load(object sender, EventArgs e)
         {
-            for (int i = 0; i < YRes; i++)
-            {
-                Pixels[i] = new RectangleF[XRes];
-                for (int j = 0; j < XRes; j++)
-                {
-                    Pixels[i][j] = new RectangleF(new PointF((float)this.VisualiserArea.Width / (float)XRes * j, (float)this.VisualiserArea.Height / (float)YRes * i), new SizeF((float)this.VisualiserArea.Width / (float)XRes, (float)this.VisualiserArea.Width / (float)YRes));
-                }
-            }
-
-            for (int i = YRes - 1; i >= 0; i--)
-            {
-                ScaledCoords[i] = new PointF[XRes];
-                InMandelbrot[i] = new double[XRes];
-
-                for (int j = 0; j < XRes; j++)
-                {
-                    ScaledCoords[i][j] = new PointF(TopLeftScaledCoord.X + (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)(1 + 2 * j) / (float)(2 * XRes),
-                                                    BottomRightScaledCoord.Y + (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)(1 + 2 * i) / (float)(2 * YRes));
-                    InMandelbrot[i][j] = GetSmoothEscapeCount(ScaledCoords[i][j]);
-                }
-            } //saves and calculates the centres of each rectangle "pixel" area's actual coordinates
-
-            bkgDrawThread = new Thread(PaintArea) { IsBackground = true };
-            bkgDrawThread.Start();
-            bkgDrawThread = null;
         }
 
-        private void PaintArea()
+        private void GenerateNewImage()
         {
-            Bitmap bitmap = new(this.VisualiserArea.Width, this.VisualiserArea.Height);
-            using Graphics formGraphics = this.CreateGraphics();
-            using Graphics bmpGraphics = Graphics.FromImage(bitmap);
-            using SolidBrush solidBrush = new(Color.Black);
-            for (int i = 0; i < YRes; i++)
+            IsComputing = true;
+            BitmapG.Clear(Color.White);
+
+            double ModSquared = 0;
+            Color CurrColor;
+            CoordsTranslator = new ScaledToPixelTranslator(BitmapG, BottomLeft, TopRight);
+            ComplexNumber PixelStep = new ComplexNumber(1, 1);
+            ComplexNumber ScaledStep = CoordsTranslator.GetScaledCoordChange(PixelStep);
+
+            int yPixel = MandelBitmap.Height - 1;
+
+            for (double y = BottomLeft.y; y < TopRight.y; y += ScaledStep.y)
             {
-                for (int j = 0; j < XRes; j++)
+                int xPixel = 0;
+                for (double x = BottomLeft.x; x < TopRight.x; x += ScaledStep.x)
                 {
-                    solidBrush.Color = GetGreyscaleColor(InMandelbrot[i][j]);
-                    bmpGraphics.FillRectangle(solidBrush, Pixels[i][j]);
+                    ComplexNumber candidate = new ComplexNumber(x, y);
+                    ComplexNumber newPoint = new ComplexNumber(0, 0);
+                    int i = 0;
+                    while (ModSquared <= 4 && i < MaxIter)
+                    {
+                        newPoint = newPoint * newPoint + candidate;
+                        ModSquared = newPoint.ModulusSquared;
+                        i++;
+                    }
+                    ModSquared = 0;
+                    if (i < MaxIter)
+                    {
+                        CurrColor = ColourTable.GetColor(i);
+                        if (xPixel < MandelBitmap.Width && yPixel >= 0)
+                        {
+                            MandelBitmap.SetPixel(xPixel, yPixel, CurrColor);
+                        }
+                    }
+                    xPixel += 1;
                 }
+                yPixel -= 1;
             }
-            formGraphics.DrawImage(bitmap, this.VisualiserArea);
-            if ((ViewStack.CurrentSize > 0 && bitmap != ViewStack.Peek().View) || ViewStack.CurrentSize == 0) //checking whether the drawn area is the same
-            {
-                AddCurrentViewToStack(bitmap, TopLeftScaledCoord, BottomRightScaledCoord);
-            }
+            using Graphics g = this.CreateGraphics();
+            g.DrawImage(MandelBitmap, 10, 10, MandelBitmap.Width, MandelBitmap.Height);
+
+            CurrentState currentState = new CurrentState((Bitmap)MandelBitmap.Clone(), TopRight, BottomLeft);
+            ViewStack.Push(currentState);
+            IsComputing = false;
         }
-
-        
-        private double GetSmoothEscapeCount(PointF candidatePoint)
-        {
-            PointF newPoint = new(0, 0);
-
-            for (int i = 1; i <= MaxIter; i++)
-            {
-                newPoint.X = newPoint.X * newPoint.X - newPoint.Y * newPoint.Y + candidatePoint.X; //X = real part of z(n) = z(n-1)*2 + c
-                newPoint.Y = 2 * newPoint.X * newPoint.Y + candidatePoint.Y; //Y is imaginary part of z(n)
-                double magnitude = Math.Sqrt(newPoint.X * newPoint.X + newPoint.Y * newPoint.Y);
-                if (magnitude > 2)
-                {
-                    return Math.Log(i) / Math.Log(MaxIter);
-                }
-            }
-            return 1;
-        }
-
-
-        private Color GetGreyscaleColor(double value)
-        {
-            // Scale the double value to the range of 0 to 255
-            int intensity = (int)(value * 255);
-
-            // Create a grayscale color with the same intensity for each RGB component
-            return Color.FromArgb(intensity, intensity, intensity);
-        }
-
-
-        private void AddCurrentViewToStack(Bitmap bitmap, PointF TL, PointF BR)
-        {
-            CurrentState currentView = new(bitmap, TL, BR);
-            ViewStack.Push(currentView);
-        }
-
-
-
-
-
-
-
-
 
 
         private void Mandelbrot_MouseMove(object sender, MouseEventArgs e)
         {
-            if (VisualiserArea.Contains(e.Location) && !IsComputing)
+            if (VisualiserArea.Contains(e.Location))
             {
                 int X = e.X - 10;
                 int Y = e.Y - 10;
-                lblMousePos.Text = $"Mouse Position: ({(float)X / (float)this.VisualiserArea.Width * (BottomRightScaledCoord.X - TopLeftScaledCoord.X) + TopLeftScaledCoord.X}, {(float)(this.VisualiserArea.Height - Y) / (float)this.VisualiserArea.Height * (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) + BottomRightScaledCoord.Y})";
+                lblMousePos.Text = $"Mouse Position: ({(float)X / (float)this.VisualiserArea.Width * (TopRight.x - BottomLeft.x) + BottomLeft.x}, {(float)(this.VisualiserArea.Height - Y) / (float)this.VisualiserArea.Height * (TopRight.y - BottomLeft.y) + BottomLeft.y})";
             }
         }
 
-        private void Mandelbrot_Click(object sender, EventArgs e)
-        {
-            if (!IsComputing)
-            {
+        //private void Mandelbrot_Click(object sender, EventArgs e)
+        //{
+        //    if (!IsComputing)
+        //    {
 
-            }
-            //click event
-        }
+        //    }
+        //    //click event
+        //}
 
         private void btnSaveJPG_Click(object sender, EventArgs e)
         {
-            if (!IsComputing && ViewStack.CurrentSize > 0)
+            if (!IsComputing)
             {
-                Bitmap currentView = ViewStack.Peek().View;
                 SaveFileDialog saveFileDialog = new()
                 {
                     Filter = "JPEG files (*.jpg)|*.jpg|All files (*.*)|*.*",
@@ -185,7 +129,7 @@ namespace MandelbrotSet
 
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    currentView.Save(saveFileDialog.FileName, ImageFormat.Jpeg);
+                    MandelBitmap.Save(saveFileDialog.FileName, ImageFormat.Bmp);
                 }
             }
         }
@@ -193,9 +137,9 @@ namespace MandelbrotSet
         {
             if (!IsComputing)
             {
+                BitmapG.Clear(Color.White);
                 using Graphics g = this.CreateGraphics();
-                using SolidBrush solidBrush = new(this.BackColor);
-                g.FillRectangle(solidBrush, this.VisualiserArea);
+                g.DrawImage(MandelBitmap, 10, 10, MandelBitmap.Width, MandelBitmap.Height);
             }
         }
         private void btnUndoView_Click(object sender, EventArgs e)
@@ -203,10 +147,10 @@ namespace MandelbrotSet
             if (ViewStack.CurrentSize != 0)
             {
                 CurrentState previousState = ViewStack.Pop();
-                TopLeftScaledCoord = previousState.TopLeftScaledCoord;
-                BottomRightScaledCoord = previousState.BottomRightScaledCoord;
+                TopRight = previousState.TopRightScaled;
+                BottomLeft = previousState.BottomLeftScaled;
                 using Graphics g = this.CreateGraphics();
-                g.DrawImage(previousState.View, this.VisualiserArea);
+                g.DrawImage(previousState.ViewBmp, this.VisualiserArea);
             }
         }
         private void btnPanMode_Click(object sender, EventArgs e)
@@ -220,9 +164,35 @@ namespace MandelbrotSet
             else
             {
                 InPanMode = true;
-                btnPanMode.BackColor = Color.Blue;
+                btnPanMode.BackColor = Color.Goldenrod;
                 this.Cursor = Cursors.SizeAll;
             }
+        }
+
+        private void btnZoomMode_Click(object sender, EventArgs e)
+        {
+
+            if (!IsComputing && InZoomMode)
+            {
+                InZoomMode = false;
+                btnZoomMode.BackColor = Control.DefaultBackColor;
+            }
+            else if (!IsComputing && !InZoomMode)
+            {
+                InZoomMode = true;
+                btnZoomMode.BackColor = Color.Goldenrod;
+            }
+        }
+
+        private void btnDefaultView_Click(object sender, EventArgs e)
+        {
+            if (ViewStack.CurrentSize > 0 && ViewStack.Peek().TopRightScaled == TopRight && ViewStack.Peek().BottomLeftScaled == BottomLeft)
+            {
+                return;
+            }
+            TopRight = new ComplexNumber(2, 1.5);
+            BottomLeft = new ComplexNumber(-2, -1.5);
+            GenerateNewImage();
         }
 
         private void Mandelbrot_MouseDown(object sender, MouseEventArgs e)
@@ -253,96 +223,71 @@ namespace MandelbrotSet
                     return;
                 }
 
-                double xdif = BottomRightScaledCoord.X - TopLeftScaledCoord.X;
-                double ydif = TopLeftScaledCoord.Y - BottomRightScaledCoord.Y;
+                double xdif = TopRight.x - BottomLeft.x;
+                double ydif = TopRight.y - BottomLeft.y;
 
                 if (panx > 0 && pany > 0) //SE direction
                 {
-                    TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X - (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)panx / VisualiserArea.Width, 
-                                                    TopLeftScaledCoord.Y - (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)pany / VisualiserArea.Height);
-                    BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
-
-                   
-
+                    TopRight = new ComplexNumber(TopRight.x - (TopRight.x - BottomLeft.x) * (float)panx / VisualiserArea.Width,
+                                                    TopRight.y + (TopRight.y - BottomLeft.y) * (float)pany / VisualiserArea.Height);
                 }
                 if (panx > 0 && pany < 0) //NE direction 
                 {
                     pany = Math.Abs(pany);
 
-                    TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X - (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)panx / VisualiserArea.Width,
-                                                    TopLeftScaledCoord.Y + (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)pany / VisualiserArea.Height);
-                    BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
-
+                    TopRight = new ComplexNumber(TopRight.x - (TopRight.x - BottomLeft.x) * (float)panx / VisualiserArea.Width,
+                                                   TopRight.y - (TopRight.y - BottomLeft.y) * (float)pany / VisualiserArea.Height);
                 }
                 if (panx < 0 && pany < 0) //NW direction
                 {
                     panx = Math.Abs(panx);
                     pany = Math.Abs(pany);
-                    TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X + (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)panx / VisualiserArea.Width,
-                                                    TopLeftScaledCoord.Y + (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)pany / VisualiserArea.Height);
-                    BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
 
+                    TopRight = new ComplexNumber(TopRight.x + (TopRight.x - BottomLeft.x) * (float)panx / VisualiserArea.Width,
+                                                    TopRight.y - (TopRight.y - BottomLeft.y) * (float)pany / VisualiserArea.Height);
                 }
                 if (panx < 0 && pany > 0) //SW direction
                 {
                     panx = Math.Abs(panx);
 
-                    TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X + (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)panx / VisualiserArea.Width,
-                                                    TopLeftScaledCoord.Y - (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)pany / VisualiserArea.Height);
-                    BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
+                    TopRight = new ComplexNumber(TopRight.x + (TopRight.x - BottomLeft.x) * (float)panx / VisualiserArea.Width,
+                                                   TopRight.y + (TopRight.y - BottomLeft.y) * (float)pany / VisualiserArea.Height);
                 }
                 if (panx > 0 && pany == 0) //E direction
                 {
-                    TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X - (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)panx / VisualiserArea.Width,
-                                                    TopLeftScaledCoord.Y);
-                    BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
-
+                    TopRight = new ComplexNumber(TopRight.x + (TopRight.x - BottomLeft.x) * (float)panx / VisualiserArea.Width,
+                                                   TopRight.y);
                 }
                 if (panx < 0 && pany == 0) //W direction
                 {
                     panx = Math.Abs(panx);
 
-                    TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X + (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)panx / VisualiserArea.Width,
-                                                    TopLeftScaledCoord.Y);
-                    BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
+                    TopRight = new ComplexNumber(TopRight.x - (TopRight.x - BottomLeft.x) * (float)panx / VisualiserArea.Width,
+                                                   TopRight.y);
                 }
                 if (panx == 0 && pany < 0) //N direction
                 {
                     pany = Math.Abs(pany);
 
-                    TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X,
-                                                    TopLeftScaledCoord.Y + (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)pany / VisualiserArea.Height);
-                    BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
-
+                    TopRight = new ComplexNumber(TopRight.x,
+                                                   TopRight.y - (TopRight.y - BottomLeft.y) * (float)pany / VisualiserArea.Height);
                 }
                 if (panx == 0 && pany > 0) //S direction
                 {
-                    TopLeftScaledCoord = new PointF(TopLeftScaledCoord.X,
-                                                    TopLeftScaledCoord.Y - (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)pany / VisualiserArea.Height);
-                    BottomRightScaledCoord = new PointF((float)(TopLeftScaledCoord.X + xdif), (float)(TopLeftScaledCoord.Y - ydif));
+                    TopRight = new ComplexNumber(TopRight.x,
+                                                 TopRight.y + (TopRight.y - BottomLeft.y) * (float)pany / VisualiserArea.Height);
                 }
 
-                for (int i = YRes - 1; i >= 0; i--)
-                {
-                    ScaledCoords[i] = new PointF[XRes];
-                    InMandelbrot[i] = new double[XRes];
+                BottomLeft = new ComplexNumber((float)(TopRight.x - xdif), (float)(TopRight.y - ydif));
 
-                    for (int j = 0; j < XRes; j++)
-                    {
-                        ScaledCoords[i][j] = new PointF(TopLeftScaledCoord.X + (BottomRightScaledCoord.X - TopLeftScaledCoord.X) * (float)(1 + 2 * j) / (float)(2 * XRes),
-                                                        BottomRightScaledCoord.Y + (TopLeftScaledCoord.Y - BottomRightScaledCoord.Y) * (float)(1 + 2 * i) / (float)(2 * YRes));
-                        InMandelbrot[i][j] = GetSmoothEscapeCount(ScaledCoords[i][j]);
-                    }
-                } //recalculating the centres of each "pixel" area's actual coordinates and the colours
-                bkgDrawThread = new Thread(PaintArea) { IsBackground = true };
-                bkgDrawThread.Start();
 
-                bkgDrawThread.Join();
-                IsComputing = false;
+                GenerateNewImage();
+                //draw the bastard
+
                 this.Cursor = Cursors.SizeAll;
                 return;
-
             }
         }
+
     }
 }
