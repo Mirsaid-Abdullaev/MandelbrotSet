@@ -16,7 +16,6 @@ namespace MandelbrotSet.Utils
                 return Size;
             }
         }
-
         private readonly int MaxSize;
         public int GetMaxSize
         {
@@ -25,9 +24,7 @@ namespace MandelbrotSet.Utils
                 return MaxSize;
             }
         }
-
         private T[] Values;
-
         public Stack(bool FixedSize = false, int MaxSize = 250)
         {
             if (FixedSize)
@@ -42,7 +39,6 @@ namespace MandelbrotSet.Utils
             Values = Array.Empty<T>();
             Size = 0;
         }
-
         public T Pop()
         {
             if (Size > 0)
@@ -60,7 +56,6 @@ namespace MandelbrotSet.Utils
                 throw new Exception("Error: stack is empty, nothing to pop.");
             }
         }
-
         public void Push(T Item)
         {
             if (Size == MaxSize)
@@ -77,7 +72,6 @@ namespace MandelbrotSet.Utils
                 Size++;
             }
         }
-
         public T Peek()
         {
             if (Size > 0)
@@ -90,12 +84,10 @@ namespace MandelbrotSet.Utils
                 throw new Exception("Error: empty stack, nothing to peek)");
             }
         }
-
         public List<T> StackToList()
         {
             return Values.ToList();
         }
-
         public void ForgetFirstNItems(int FirstNItems)
         {
             if (Size >= FirstNItems)
@@ -110,7 +102,6 @@ namespace MandelbrotSet.Utils
                 throw new ArgumentException("Error: stack does not contain that many items.");
             }
         }
-
         public override string ToString()
         {
             return "{" + string.Join(',', Values) + "}";

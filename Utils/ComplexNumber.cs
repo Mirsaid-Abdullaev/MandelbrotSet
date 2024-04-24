@@ -6,9 +6,7 @@ using System.Threading;
 using System.Windows.Forms;
 namespace MandelbrotSet.Utils
 {
-#pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
     internal class ComplexNumber
-#pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
     {
         public double x;
         public double y;

@@ -46,6 +46,9 @@ namespace MandelbrotSet
             lblShowTime = new Label();
             label1 = new Label();
             txtIterCount = new TextBox();
+            checkBox1 = new CheckBox();
+            checkBox2 = new CheckBox();
+            checkBox3 = new CheckBox();
             SuspendLayout();
             // 
             // lblMousePos
@@ -135,7 +138,7 @@ namespace MandelbrotSet
             // 
             lblTimer.BorderStyle = BorderStyle.FixedSingle;
             lblTimer.Font = new Font("Bahnschrift SemiLight Condensed", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            lblTimer.Location = new Point(820, 540);
+            lblTimer.Location = new Point(817, 520);
             lblTimer.Name = "lblTimer";
             lblTimer.Size = new Size(90, 43);
             lblTimer.TabIndex = 10;
@@ -145,7 +148,7 @@ namespace MandelbrotSet
             // 
             lblShowTime.BorderStyle = BorderStyle.FixedSingle;
             lblShowTime.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            lblShowTime.Location = new Point(820, 587);
+            lblShowTime.Location = new Point(817, 567);
             lblShowTime.Name = "lblShowTime";
             lblShowTime.Size = new Size(90, 23);
             lblShowTime.TabIndex = 11;
@@ -154,7 +157,7 @@ namespace MandelbrotSet
             // 
             label1.BorderStyle = BorderStyle.FixedSingle;
             label1.Font = new Font("Bahnschrift SemiLight Condensed", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            label1.Location = new Point(820, 464);
+            label1.Location = new Point(817, 468);
             label1.Name = "label1";
             label1.Size = new Size(90, 23);
             label1.TabIndex = 12;
@@ -162,16 +165,55 @@ namespace MandelbrotSet
             // 
             // txtIterCount
             // 
-            txtIterCount.Location = new Point(820, 490);
+            txtIterCount.Location = new Point(817, 494);
             txtIterCount.Name = "txtIterCount";
             txtIterCount.Size = new Size(90, 23);
             txtIterCount.TabIndex = 13;
+            // 
+            // checkBox1
+            // 
+            checkBox1.BackColor = Color.Transparent;
+            checkBox1.ForeColor = Color.Orange;
+            checkBox1.Location = new Point(820, 388);
+            checkBox1.Name = "checkBox1";
+            checkBox1.Size = new Size(87, 19);
+            checkBox1.TabIndex = 14;
+            checkBox1.Text = "Palette 1";
+            checkBox1.UseVisualStyleBackColor = false;
+            checkBox1.CheckedChanged += CheckBox1_CheckedChanged;
+            // 
+            // checkBox2
+            // 
+            checkBox2.BackColor = Color.Transparent;
+            checkBox2.ForeColor = Color.Orange;
+            checkBox2.Location = new Point(820, 413);
+            checkBox2.Name = "checkBox2";
+            checkBox2.Size = new Size(87, 19);
+            checkBox2.TabIndex = 15;
+            checkBox2.Text = "Palette 2";
+            checkBox2.UseVisualStyleBackColor = false;
+            checkBox2.CheckedChanged += CheckBox2_CheckedChanged;
+            // 
+            // checkBox3
+            // 
+            checkBox3.BackColor = Color.Transparent;
+            checkBox3.ForeColor = Color.Orange;
+            checkBox3.Location = new Point(820, 438);
+            checkBox3.Name = "checkBox3";
+            checkBox3.Size = new Size(87, 19);
+            checkBox3.TabIndex = 16;
+            checkBox3.Text = "Palette 3";
+            checkBox3.UseVisualStyleBackColor = false;
+            checkBox3.CheckedChanged += CheckBox3_CheckedChanged;
             // 
             // Mandelbrot
             // 
             AutoScaleDimensions = new SizeF(7F, 16F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(920, 642);
+            ClientSize = new Size(925, 642);
+            Controls.Add(checkBox3);
+            Controls.Add(checkBox2);
+            Controls.Add(checkBox1);
             Controls.Add(txtIterCount);
             Controls.Add(label1);
             Controls.Add(lblShowTime);
@@ -190,6 +232,7 @@ namespace MandelbrotSet
             Name = "Mandelbrot";
             Text = "Mandelbrot Visualiser - by Mirsaid Abdullaev";
             Shown += Mandelbrot_Shown;
+            Paint += Mandelbrot_Paint;
             MouseDown += Mandelbrot_MouseDown;
             MouseMove += Mandelbrot_MouseMove;
             MouseUp += Mandelbrot_MouseUp;
@@ -210,5 +253,8 @@ namespace MandelbrotSet
         private Label lblShowTime;
         private Label label1;
         private TextBox txtIterCount;
+        private CheckBox checkBox1;
+        private CheckBox checkBox2;
+        private CheckBox checkBox3;
     }
 }

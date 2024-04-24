@@ -16,8 +16,6 @@ namespace MandelbrotSet
             SetControlGradient(this, Colours1);
             this.ForeColor = Color.WhiteSmoke;
         }
-
-
         private void BtnInitialiseApp_Click(object sender, EventArgs e)
         {
             UserClosed = false;

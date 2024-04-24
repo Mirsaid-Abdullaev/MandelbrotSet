@@ -15,29 +15,35 @@ namespace MandelbrotSet
 {
     public partial class Mandelbrot : Form
     {
-        private Bitmap MandelBitmap;
+        private readonly Bitmap MandelBitmap;
+        private Rectangle VisualiserArea;
+        private readonly Graphics BitmapG;
         private ScaledToPixelTranslator? CoordsTranslator;
+        private ColourLookupTable ColourTable;
+        private readonly Utils.Stack<CurrentState> ViewStack;
+        private readonly Stopwatch stopwatch;
+        private Thread? bkgDrawThread;
+
         private int MaxIter;
+        private int ColorPalette;
+
         private ComplexNumber TopRight;
         private ComplexNumber BottomLeft;
-        private Rectangle VisualiserArea;
-        private Graphics BitmapG;
-        private ColourLookupTable ColourTable;
+
         private bool IsComputing;
         private bool InPanMode;
         private bool InZoomMode;
         private bool IsPanning;
         private bool IsZooming;
+
         private Point StartedPanPoint;
         private Point StoppedPanPoint;
+        private int panx;
+        private int pany;
+
         private Point StartedZoomPoint;
         private Rectangle ZoomRect;
         private Rectangle ZoomRectScreen;
-        private int panx;
-        private int pany;
-        private Utils.Stack<CurrentState> ViewStack;
-        private readonly Stopwatch stopwatch;
-        private Thread? bkgDrawThread;
 
         public Mandelbrot(int MaxIter)
         {
@@ -55,9 +61,9 @@ namespace MandelbrotSet
             ColourTable = new ColourLookupTable(MaxIter);
             ViewStack = new Utils.Stack<CurrentState>();
             SetControlGradient(this, Colours6);
+            ColorPalette = 1;
             CheckForIllegalCrossThreadCalls = false;
         }
-
         private void GenerateNewImage()
         {
             IsComputing = true;
@@ -68,7 +74,7 @@ namespace MandelbrotSet
             if (ColourTable.MaxIterations != MaxIter)
             {
                 ColourTable = new ColourLookupTable(MaxIter);
-            } //recalculating the colour table if the max iterations variable changes from user input
+            } 
 
             double ModSquared = 0;
             Color CurrColor;
@@ -78,10 +84,10 @@ namespace MandelbrotSet
 
             using Graphics g = this.CreateGraphics();
 
-            int yPixel = MandelBitmap.Height - 1;
+            int RowPixel = MandelBitmap.Height - 1;
             for (double y = BottomLeft.y; y < TopRight.y; y += ScaledStep.y)
             {
-                int xPixel = 0;
+                int ColumnPixel = 0;
                 for (double x = BottomLeft.x; x < TopRight.x; x += ScaledStep.x)
                 {
                     ComplexNumber candidate = new ComplexNumber(x, y);
@@ -96,21 +102,21 @@ namespace MandelbrotSet
                     ModSquared = 0;
                     if (i < MaxIter)
                     {
-                        CurrColor = ColourTable.GetColor(i);
-                        if (xPixel < MandelBitmap.Width && yPixel >= 0)
+                        CurrColor = ColourTable.GetColor(i, ColorPalette);
+                        if (ColumnPixel < MandelBitmap.Width && RowPixel >= 0)
                         {
-                            MandelBitmap.SetPixel(xPixel, yPixel, CurrColor);
+                            MandelBitmap.SetPixel(ColumnPixel, RowPixel, CurrColor);
                         }
                     }
-                    xPixel += 1;
+                    ColumnPixel += 1;
                 }
-                yPixel -= 1;
-                if (yPixel % 200 == 0)
+                RowPixel -= 1;
+                if (RowPixel % 225 == 0)
                 {
-                    g.DrawImage(MandelBitmap, 10, 10, MandelBitmap.Width, MandelBitmap.Height);
+                    g.DrawImage(MandelBitmap, VisualiserArea.Location);
                 }
             }
-            g.DrawImage(MandelBitmap, 10, 10, MandelBitmap.Width, MandelBitmap.Height);
+            g.DrawImage(MandelBitmap, VisualiserArea.Location);
             CurrentState currentState = new CurrentState(TopRight, BottomLeft, MaxIter);
             ViewStack.Push(currentState);
             stopwatch.Stop();
@@ -118,11 +124,26 @@ namespace MandelbrotSet
             this.Cursor = Cursors.Default;
             IsComputing = false;
         }
-
+        private bool IsValidIterCount()
+        {
+            int IterCount;
+            Regex regex = new Regex("[1-9]+[0-9]*");
+            if (!regex.IsMatch(txtIterCount.Text))
+            {
+                return false;
+            }
+            IterCount = Convert.ToInt16(txtIterCount.Text);
+            if (IterCount > 1000 || IterCount <= 0)
+            {
+                return false;
+            }
+            return true;
+        }
         private void BtnSaveJPG_Click(object sender, EventArgs e)
         {
-            if (!IsComputing && ! InPanMode && !InZoomMode)
+            if (!IsComputing && !InPanMode && !InZoomMode)
             {
+                btnSaveJPG.BackColor = Color.Goldenrod;
                 SaveFileDialog saveFileDialog = new SaveFileDialog()
                 {
                     Filter = "JPEG files (*.jpg)|*.jpg|All files (*.*)|*.*",
@@ -133,21 +154,25 @@ namespace MandelbrotSet
                 {
                     MandelBitmap.Save(saveFileDialog.FileName, ImageFormat.Bmp);
                 }
+                btnSaveJPG.BackColor = Color.DodgerBlue;
             }
         }
         private void BtnClear_Click(object sender, EventArgs e)
         {
             if (!IsComputing && !InPanMode && !InZoomMode)
             {
+                btnClear.BackColor = Color.Goldenrod;
                 BitmapG.Clear(Color.White);
                 using Graphics g = this.CreateGraphics();
                 g.DrawImage(MandelBitmap, 10, 10, MandelBitmap.Width, MandelBitmap.Height);
+                btnClear.BackColor = Color.DodgerBlue;
             }
         }
         private void BtnUndoView_Click(object sender, EventArgs e)
         {
             if (ViewStack.CurrentSize > 1 && !IsComputing)
             {
+                btnUndoView.BackColor = Color.Goldenrod;
                 CurrentState previousState = ViewStack.Pop();
                 previousState = ViewStack.Pop();
                 TopRight = previousState.TopRightScaled;
@@ -157,6 +182,7 @@ namespace MandelbrotSet
                 bkgDrawThread = new Thread(GenerateNewImage);
                 bkgDrawThread.Start();
                 bkgDrawThread = null;
+                btnUndoView.BackColor = Color.DodgerBlue;
             }
         }
         private void BtnPanMode_Click(object sender, EventArgs e)
@@ -164,7 +190,7 @@ namespace MandelbrotSet
             if (!IsComputing && InPanMode) //stop the pan mode
             {
                 InPanMode = false;
-                btnPanMode.BackColor = Control.DefaultBackColor;
+                btnPanMode.BackColor = Color.DodgerBlue;
                 this.Cursor = Cursors.Default;
             }
             else if (!InZoomMode)
@@ -174,14 +200,13 @@ namespace MandelbrotSet
                 this.Cursor = Cursors.SizeAll;
             }
         }
-
         private void BtnZoomMode_Click(object sender, EventArgs e)
         {
 
             if (!IsComputing && InZoomMode)
             {
                 InZoomMode = false;
-                btnZoomMode.BackColor = Control.DefaultBackColor;
+                btnZoomMode.BackColor = Color.DodgerBlue;
             }
             else if (!InPanMode)
             {
@@ -189,11 +214,11 @@ namespace MandelbrotSet
                 btnZoomMode.BackColor = Color.Goldenrod;
             }
         }
-
         private void BtnDefaultView_Click(object sender, EventArgs e)
         {
             if (!IsComputing)
             {
+                btnDefaultView.BackColor = Color.Goldenrod;
                 TopRight = new ComplexNumber(2, 1.5);
                 BottomLeft = new ComplexNumber(-2, -1.5);
 
@@ -214,9 +239,57 @@ namespace MandelbrotSet
                 bkgDrawThread = new Thread(GenerateNewImage);
                 bkgDrawThread.Start();
                 bkgDrawThread = null;
+                btnDefaultView.BackColor = Color.DodgerBlue;
             }
         }
-
+        private void CheckBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!IsComputing)
+            {
+                if (checkBox1.Checked)
+                {
+                    ColorPalette = 1;
+                    checkBox2.Checked = false;
+                    checkBox3.Checked = false;
+                }
+            }
+            else
+            {
+                checkBox1.Checked = false;
+            }
+        }
+        private void CheckBox2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!IsComputing)
+            {
+                if (checkBox2.Checked)
+                {
+                    ColorPalette = 2;
+                    checkBox1.Checked = false;
+                    checkBox3.Checked = false;
+                }
+            }
+            else
+            {
+                checkBox2.Checked = false;
+            }
+        }
+        private void CheckBox3_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!IsComputing)
+            {
+                if (checkBox3.Checked)
+                {
+                    ColorPalette = 3;
+                    checkBox2.Checked = false;
+                    checkBox1.Checked = false;
+                }
+            }
+            else
+            {
+                checkBox3.Checked = false;
+            }
+        }
         private void Mandelbrot_MouseMove(object sender, MouseEventArgs e)
         {
             if (VisualiserArea.Contains(e.Location))
@@ -228,7 +301,7 @@ namespace MandelbrotSet
                 if (IsPanning)
                 {
                     using Graphics g = this.CreateGraphics();
-                    g.DrawImage(MandelBitmap, 10, 10, MandelBitmap.Width, MandelBitmap.Height);
+                    g.DrawImage(MandelBitmap, VisualiserArea.Location);
                     g.DrawLine(new Pen(Color.PaleGoldenrod, 2F) { CustomEndCap = new AdjustableArrowCap(8, 8) { Filled = false } }, StartedPanPoint, e.Location);
                 }
                 if (IsZooming)
@@ -262,7 +335,7 @@ namespace MandelbrotSet
                     ZoomRectScreen = new Rectangle(ZoomRect.X + 10, ZoomRect.Y + 10, ZoomRect.Width, ZoomRect.Height);
                     if (VisualiserArea.Contains(ZoomRectScreen))
                     {
-                        g.DrawImage(MandelBitmap, 10, 10, MandelBitmap.Width, MandelBitmap.Height);
+                        g.DrawImage(MandelBitmap, VisualiserArea.Location);
                         g.DrawRectangle(new Pen(Color.AntiqueWhite, 1F), ZoomRectScreen);
                     }
                     else
@@ -275,9 +348,7 @@ namespace MandelbrotSet
             {
                 lblMousePos.Text = "Mouse Position: Out of visualiser area bounds.";
             }
-
         }
-
         private void Mandelbrot_MouseDown(object sender, MouseEventArgs e)
         {
             if (VisualiserArea.Contains(e.Location))
@@ -294,7 +365,6 @@ namespace MandelbrotSet
                 }
             }
         }
-
         private void Mandelbrot_MouseUp(object sender, MouseEventArgs e)
         {
             if (VisualiserArea.Contains(e.Location))
@@ -365,28 +435,18 @@ namespace MandelbrotSet
                     bkgDrawThread = null;
                 }
             }
-
         }
-
-        private bool IsValidIterCount()
+        private void Mandelbrot_Paint(object sender, PaintEventArgs e)
         {
-            int IterCount;
-            Regex regex = new Regex("[1-9]+[0-9]*");
-            if (!regex.IsMatch(txtIterCount.Text))
+            if (!IsComputing)
             {
-                return false;
+                using Graphics g = this.CreateGraphics();
+                g.DrawImage(MandelBitmap, VisualiserArea.Location);
             }
-            IterCount = Convert.ToInt16(txtIterCount.Text);
-            if (IterCount > 1000 || IterCount <= 0)
-            {
-                return false;
-            }
-            return true;
         }
-
-
         private void Mandelbrot_Shown(object sender, EventArgs e)
         {
+            checkBox1.Checked = true;
             bkgDrawThread = new Thread(GenerateNewImage);
             bkgDrawThread.Start();
             bkgDrawThread = null;
