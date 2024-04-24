@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MandelbrotSet")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+23b301ef66aa2e08e21bf8aac08730b4aa706e1a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8c6441228049329c8fabc68bfe54ca25fb076d78")]
 [assembly: System.Reflection.AssemblyProductAttribute("MandelbrotSet")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MandelbrotSet")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
