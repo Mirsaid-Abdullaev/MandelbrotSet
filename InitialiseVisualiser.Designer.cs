@@ -1,4 +1,10 @@
-﻿namespace MandelbrotSet
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Threading;
+using System.Windows.Forms;
+namespace MandelbrotSet
 {
     partial class InitialiseVisualiser
     {

@@ -1,3 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Threading;
+using System.Windows.Forms;
 namespace MandelbrotSet
 {
     internal static class Program
@@ -8,9 +14,10 @@ namespace MandelbrotSet
         [STAThread]
         static void Main()
         {
+#if NET6_0_OR_GREATER
             ApplicationConfiguration.Initialize();
-
-            InitialiseVisualiser initialiseVisualiser = new();
+#endif
+            InitialiseVisualiser initialiseVisualiser = new InitialiseVisualiser();
             Application.Run(initialiseVisualiser);
             if (initialiseVisualiser.UserClosed)
             {
@@ -18,7 +25,7 @@ namespace MandelbrotSet
             }
             else
             {
-                Mandelbrot mandelbrotViewer = new(250);
+                Mandelbrot mandelbrotViewer = new Mandelbrot(250);
                 Application.Run(mandelbrotViewer);
             }
         }

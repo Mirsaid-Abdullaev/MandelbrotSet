@@ -1,4 +1,10 @@
-﻿using System.Drawing.Drawing2D;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Threading;
+using System.Windows.Forms;
+using System.Drawing.Drawing2D;
 
 namespace MandelbrotSet.Utils
 {
@@ -13,8 +19,8 @@ namespace MandelbrotSet.Utils
         public static Color[] Colours7 = new Color[] { Color.FromArgb(0, 90, 167), Color.FromArgb(255, 253, 228) };
         public static void SetControlGradient(Control control, Color[] colors)
         {
-            ColorBlend colorBlend = new() { Colors = colors, Positions = CalculateGradientPositions(colors.Length) };
-            LinearGradientBrush linearGradientBrush = new(control.ClientRectangle, Color.Black, Color.Black, LinearGradientMode.ForwardDiagonal) { InterpolationColors = colorBlend };
+            ColorBlend colorBlend = new ColorBlend() { Colors = colors, Positions = CalculateGradientPositions(colors.Length) };
+            LinearGradientBrush linearGradientBrush = new LinearGradientBrush(control.ClientRectangle, Color.Black, Color.Black, LinearGradientMode.ForwardDiagonal) { InterpolationColors = colorBlend };
             control.BackgroundImage = new Bitmap(1, 1);
             control.BackgroundImage = DrawToBitmap(linearGradientBrush, control.ClientRectangle.Size);
         }
@@ -30,7 +36,7 @@ namespace MandelbrotSet.Utils
 
         public static Bitmap DrawToBitmap(Brush brush, Size size)
         {
-            Bitmap bitmap = new(size.Width, size.Height);
+            Bitmap bitmap = new Bitmap(size.Width, size.Height);
             using (Graphics g = Graphics.FromImage(bitmap))
             {
                 g.FillRectangle(brush, new Rectangle(Point.Empty, size));

@@ -1,4 +1,10 @@
-﻿namespace MandelbrotSet.Utils
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Threading;
+using System.Windows.Forms;
+namespace MandelbrotSet.Utils
 {
 #pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
     internal class ComplexNumber
@@ -36,7 +42,7 @@
 
         public static ComplexNumber operator +(ComplexNumber z1, ComplexNumber z2)
         {
-            ComplexNumber z3 = new()
+            ComplexNumber z3 = new ComplexNumber()
             {
                 x = z1.x + z2.x,
                 y = z1.y + z2.y
@@ -46,7 +52,7 @@
 
         public static ComplexNumber operator -(ComplexNumber z1, ComplexNumber z2)
         {
-            ComplexNumber z3 = new()
+            ComplexNumber z3 = new ComplexNumber()
             {
                 x = z1.x - z2.x,
                 y = z1.y - z2.y
@@ -56,7 +62,7 @@
 
         public static ComplexNumber operator *(ComplexNumber z1, ComplexNumber z2)
         {
-            ComplexNumber z3 = new()
+            ComplexNumber z3 = new ComplexNumber()
             {
                 x = z1.x * z2.x - z1.y * z2.y,
                 y = z1.x * z2.y + z1.y * z2.x
@@ -66,7 +72,7 @@
 
         public static ComplexNumber operator /(ComplexNumber z1, ComplexNumber z2)
         {
-            ComplexNumber z3 = new()
+            ComplexNumber z3 = new ComplexNumber()
             {
                 x = (z1.x * z2.x + z1.y * z2.y) / (z2.x * z2.x + z2.y * z2.y),
                 y = (z1.y * z2.x - z1.x * z2.y) / (z2.x * z2.x + z2.y * z2.y)

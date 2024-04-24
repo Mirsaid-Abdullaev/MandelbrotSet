@@ -4,6 +4,12 @@ using MandelbrotSet.Utils;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using static MandelbrotSet.Utils.Design;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace MandelbrotSet
 {
@@ -67,7 +73,7 @@ namespace MandelbrotSet
             double ModSquared = 0;
             Color CurrColor;
             CoordsTranslator = new ScaledToPixelTranslator(BitmapG, BottomLeft, TopRight);
-            ComplexNumber PixelStep = new(1, 1);
+            ComplexNumber PixelStep = new ComplexNumber(1, 1);
             ComplexNumber ScaledStep = CoordsTranslator.GetScaledCoordChange(PixelStep);
 
             using Graphics g = this.CreateGraphics();
@@ -78,8 +84,8 @@ namespace MandelbrotSet
                 int xPixel = 0;
                 for (double x = BottomLeft.x; x < TopRight.x; x += ScaledStep.x)
                 {
-                    ComplexNumber candidate = new(x, y);
-                    ComplexNumber newPoint = new(0, 0);
+                    ComplexNumber candidate = new ComplexNumber(x, y);
+                    ComplexNumber newPoint = new ComplexNumber(0, 0);
                     int i = 0;
                     while (ModSquared <= 4 && i < MaxIter)
                     {
@@ -105,7 +111,7 @@ namespace MandelbrotSet
                 }
             }
             g.DrawImage(MandelBitmap, 10, 10, MandelBitmap.Width, MandelBitmap.Height);
-            CurrentState currentState = new(TopRight, BottomLeft, MaxIter);
+            CurrentState currentState = new CurrentState(TopRight, BottomLeft, MaxIter);
             ViewStack.Push(currentState);
             stopwatch.Stop();
             lblShowTime.Text = Math.Round(stopwatch.Elapsed.TotalSeconds, 5).ToString();
@@ -117,7 +123,7 @@ namespace MandelbrotSet
         {
             if (!IsComputing && ! InPanMode && !InZoomMode)
             {
-                SaveFileDialog saveFileDialog = new()
+                SaveFileDialog saveFileDialog = new SaveFileDialog()
                 {
                     Filter = "JPEG files (*.jpg)|*.jpg|All files (*.*)|*.*",
                     RestoreDirectory = true
@@ -348,9 +354,9 @@ namespace MandelbrotSet
                         MaxIter = Convert.ToInt16(txtIterCount.Text);
                     }
 
-                    Point tempTopRightPixelCoord = new(ZoomRect.X + ZoomRect.Width, ZoomRect.Y);
-                    Point tempBottomLeftPixelCoord = new(ZoomRect.X, ZoomRect.Y + ZoomRect.Height);
-                    ComplexNumber tempTopRight = new(TopRight.x, TopRight.y);
+                    Point tempTopRightPixelCoord = new Point(ZoomRect.X + ZoomRect.Width, ZoomRect.Y);
+                    Point tempBottomLeftPixelCoord = new Point(ZoomRect.X, ZoomRect.Y + ZoomRect.Height);
+                    ComplexNumber tempTopRight = new ComplexNumber(TopRight.x, TopRight.y);
                     TopRight = new ComplexNumber((float)tempTopRightPixelCoord.X / (float)this.VisualiserArea.Width * (TopRight.x - BottomLeft.x) + BottomLeft.x, (float)(this.VisualiserArea.Height - tempTopRightPixelCoord.Y) / (float)this.VisualiserArea.Height * (TopRight.y - BottomLeft.y) + BottomLeft.y);
                     BottomLeft = new ComplexNumber((float)tempBottomLeftPixelCoord.X / (float)this.VisualiserArea.Width * (tempTopRight.x - BottomLeft.x) + BottomLeft.x, (float)(this.VisualiserArea.Height - tempBottomLeftPixelCoord.Y) / (float)this.VisualiserArea.Height * (tempTopRight.y - BottomLeft.y) + BottomLeft.y);
 
@@ -365,7 +371,7 @@ namespace MandelbrotSet
         private bool IsValidIterCount()
         {
             int IterCount;
-            Regex regex = new("[1-9]+[0-9]*");
+            Regex regex = new Regex("[1-9]+[0-9]*");
             if (!regex.IsMatch(txtIterCount.Text))
             {
                 return false;
