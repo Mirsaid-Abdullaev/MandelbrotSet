@@ -12,10 +12,13 @@
 
             for (int i = 0; i < MaxIter; i++)
             {
-                double ColourReturnValue = 1 - Math.Log(i) / Math.Log(MaxIter) + Math.Log(2);
-                double HueAngle = Math.Pow(ColourReturnValue, 0.25);
-                ColourTable[i] = Util.HSLToRGB(HueAngle, 0.9, 0.6);
+                double ColourReturnValue = Math.Pow(Math.Pow((double)i / (double)MaxIter, 0.9) * MaxIter, 1.5) % 360 / 360;
+                ColourTable[i] = Util.HSLToRGB(ColourReturnValue, 0.9, (double) i / (double) MaxIter);
             }
+        }
+        private static double SmoothIteration(double i)
+        {
+            return (double)(i + 1 - Math.Log(Math.Log(i)) / Math.Log(2));
         }
 
         public Color GetColor(int i)

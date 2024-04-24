@@ -1,7 +1,9 @@
 ﻿using System.Drawing.Imaging;
-using System.Drawing;
-using System.Windows.Forms;
+using System.Drawing.Drawing2D;
 using MandelbrotSet.Utils;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
+using static MandelbrotSet.Utils.Design;
 
 namespace MandelbrotSet
 {
@@ -22,53 +24,62 @@ namespace MandelbrotSet
         private bool IsZooming;
         private Point StartedPanPoint;
         private Point StoppedPanPoint;
+        private Point StartedZoomPoint;
+        private Rectangle ZoomRect;
+        private Rectangle ZoomRectScreen;
         private int panx;
         private int pany;
         private Utils.Stack<CurrentState> ViewStack;
-
+        private readonly Stopwatch stopwatch;
+        private Thread? bkgDrawThread;
 
         public Mandelbrot(int MaxIter)
         {
             InitializeComponent();
+            stopwatch = new Stopwatch();
             this.MaxIter = MaxIter;
             VisualiserArea = new Rectangle(10, 10, 800, 600);
-
+            bkgDrawThread = new Thread(GenerateNewImage);
             MandelBitmap = new Bitmap(VisualiserArea.Width, VisualiserArea.Height, PixelFormat.Format24bppRgb);
             BitmapG = Graphics.FromImage(MandelBitmap);
             BitmapG.Clear(Color.White);
 
             TopRight = new ComplexNumber(2, 1.5);
             BottomLeft = new ComplexNumber(-2, -1.5);
-            CoordsTranslator = null;
             ColourTable = new ColourLookupTable(MaxIter);
             ViewStack = new Utils.Stack<CurrentState>();
-        }
-
-
-        private void Mandelbrot_Load(object sender, EventArgs e)
-        {
+            SetControlGradient(this, Colours6);
+            CheckForIllegalCrossThreadCalls = false;
         }
 
         private void GenerateNewImage()
         {
             IsComputing = true;
+            this.Cursor = Cursors.WaitCursor;
+            stopwatch.Restart();
             BitmapG.Clear(Color.White);
+
+            if (ColourTable.MaxIterations != MaxIter)
+            {
+                ColourTable = new ColourLookupTable(MaxIter);
+            } //recalculating the colour table if the max iterations variable changes from user input
 
             double ModSquared = 0;
             Color CurrColor;
             CoordsTranslator = new ScaledToPixelTranslator(BitmapG, BottomLeft, TopRight);
-            ComplexNumber PixelStep = new ComplexNumber(1, 1);
+            ComplexNumber PixelStep = new(1, 1);
             ComplexNumber ScaledStep = CoordsTranslator.GetScaledCoordChange(PixelStep);
 
-            int yPixel = MandelBitmap.Height - 1;
+            using Graphics g = this.CreateGraphics();
 
+            int yPixel = MandelBitmap.Height - 1;
             for (double y = BottomLeft.y; y < TopRight.y; y += ScaledStep.y)
             {
                 int xPixel = 0;
                 for (double x = BottomLeft.x; x < TopRight.x; x += ScaledStep.x)
                 {
-                    ComplexNumber candidate = new ComplexNumber(x, y);
-                    ComplexNumber newPoint = new ComplexNumber(0, 0);
+                    ComplexNumber candidate = new(x, y);
+                    ComplexNumber newPoint = new(0, 0);
                     int i = 0;
                     while (ModSquared <= 4 && i < MaxIter)
                     {
@@ -88,38 +99,23 @@ namespace MandelbrotSet
                     xPixel += 1;
                 }
                 yPixel -= 1;
+                if (yPixel % 200 == 0)
+                {
+                    g.DrawImage(MandelBitmap, 10, 10, MandelBitmap.Width, MandelBitmap.Height);
+                }
             }
-            using Graphics g = this.CreateGraphics();
             g.DrawImage(MandelBitmap, 10, 10, MandelBitmap.Width, MandelBitmap.Height);
-
-            CurrentState currentState = new CurrentState((Bitmap)MandelBitmap.Clone(), TopRight, BottomLeft);
+            CurrentState currentState = new(TopRight, BottomLeft, MaxIter);
             ViewStack.Push(currentState);
+            stopwatch.Stop();
+            lblShowTime.Text = Math.Round(stopwatch.Elapsed.TotalSeconds, 5).ToString();
+            this.Cursor = Cursors.Default;
             IsComputing = false;
         }
 
-
-        private void Mandelbrot_MouseMove(object sender, MouseEventArgs e)
+        private void BtnSaveJPG_Click(object sender, EventArgs e)
         {
-            if (VisualiserArea.Contains(e.Location))
-            {
-                int X = e.X - 10;
-                int Y = e.Y - 10;
-                lblMousePos.Text = $"Mouse Position: ({(float)X / (float)this.VisualiserArea.Width * (TopRight.x - BottomLeft.x) + BottomLeft.x}, {(float)(this.VisualiserArea.Height - Y) / (float)this.VisualiserArea.Height * (TopRight.y - BottomLeft.y) + BottomLeft.y})";
-            }
-        }
-
-        //private void Mandelbrot_Click(object sender, EventArgs e)
-        //{
-        //    if (!IsComputing)
-        //    {
-
-        //    }
-        //    //click event
-        //}
-
-        private void btnSaveJPG_Click(object sender, EventArgs e)
-        {
-            if (!IsComputing)
+            if (!IsComputing && ! InPanMode && !InZoomMode)
             {
                 SaveFileDialog saveFileDialog = new()
                 {
@@ -133,35 +129,39 @@ namespace MandelbrotSet
                 }
             }
         }
-        private void btnClear_Click(object sender, EventArgs e)
+        private void BtnClear_Click(object sender, EventArgs e)
         {
-            if (!IsComputing)
+            if (!IsComputing && !InPanMode && !InZoomMode)
             {
                 BitmapG.Clear(Color.White);
                 using Graphics g = this.CreateGraphics();
                 g.DrawImage(MandelBitmap, 10, 10, MandelBitmap.Width, MandelBitmap.Height);
             }
         }
-        private void btnUndoView_Click(object sender, EventArgs e)
+        private void BtnUndoView_Click(object sender, EventArgs e)
         {
-            if (ViewStack.CurrentSize != 0)
+            if (ViewStack.CurrentSize > 1 && !IsComputing)
             {
                 CurrentState previousState = ViewStack.Pop();
+                previousState = ViewStack.Pop();
                 TopRight = previousState.TopRightScaled;
                 BottomLeft = previousState.BottomLeftScaled;
-                using Graphics g = this.CreateGraphics();
-                g.DrawImage(previousState.ViewBmp, this.VisualiserArea);
+                MaxIter = previousState.MaxIter;
+                txtIterCount.Text = MaxIter.ToString();
+                bkgDrawThread = new Thread(GenerateNewImage);
+                bkgDrawThread.Start();
+                bkgDrawThread = null;
             }
         }
-        private void btnPanMode_Click(object sender, EventArgs e)
+        private void BtnPanMode_Click(object sender, EventArgs e)
         {
-            if (InPanMode) //stop the pan mode
+            if (!IsComputing && InPanMode) //stop the pan mode
             {
                 InPanMode = false;
                 btnPanMode.BackColor = Control.DefaultBackColor;
                 this.Cursor = Cursors.Default;
             }
-            else
+            else if (!InZoomMode)
             {
                 InPanMode = true;
                 btnPanMode.BackColor = Color.Goldenrod;
@@ -169,7 +169,7 @@ namespace MandelbrotSet
             }
         }
 
-        private void btnZoomMode_Click(object sender, EventArgs e)
+        private void BtnZoomMode_Click(object sender, EventArgs e)
         {
 
             if (!IsComputing && InZoomMode)
@@ -177,117 +177,214 @@ namespace MandelbrotSet
                 InZoomMode = false;
                 btnZoomMode.BackColor = Control.DefaultBackColor;
             }
-            else if (!IsComputing && !InZoomMode)
+            else if (!InPanMode)
             {
                 InZoomMode = true;
                 btnZoomMode.BackColor = Color.Goldenrod;
             }
         }
 
-        private void btnDefaultView_Click(object sender, EventArgs e)
+        private void BtnDefaultView_Click(object sender, EventArgs e)
         {
-            if (ViewStack.CurrentSize > 0 && ViewStack.Peek().TopRightScaled == TopRight && ViewStack.Peek().BottomLeftScaled == BottomLeft)
+            if (!IsComputing)
             {
-                return;
+                TopRight = new ComplexNumber(2, 1.5);
+                BottomLeft = new ComplexNumber(-2, -1.5);
+
+                if (!IsValidIterCount())
+                {
+                    txtIterCount.Text = "250";
+                    MaxIter = 250;
+                }
+                else
+                {
+                    MaxIter = Convert.ToInt16(txtIterCount.Text);
+                }
+
+                if (IsComputing && ViewStack.CurrentSize > 0 && ViewStack.Peek().TopRightScaled == TopRight && ViewStack.Peek().BottomLeftScaled == BottomLeft)
+                {
+                    return;
+                }
+                bkgDrawThread = new Thread(GenerateNewImage);
+                bkgDrawThread.Start();
+                bkgDrawThread = null;
             }
-            TopRight = new ComplexNumber(2, 1.5);
-            BottomLeft = new ComplexNumber(-2, -1.5);
-            GenerateNewImage();
+        }
+
+        private void Mandelbrot_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (VisualiserArea.Contains(e.Location))
+            {
+                int X = e.X - 10;
+                int Y = e.Y - 10;
+                lblMousePos.Text = $"Mouse Position: ({(float)X / (float)this.VisualiserArea.Width * (TopRight.x - BottomLeft.x) + BottomLeft.x}, {(float)(this.VisualiserArea.Height - Y) / (float)this.VisualiserArea.Height * (TopRight.y - BottomLeft.y) + BottomLeft.y}), Aspect Ratio: {(TopRight.x - BottomLeft.x) / (TopRight.y - BottomLeft.y)}";
+
+                if (IsPanning)
+                {
+                    using Graphics g = this.CreateGraphics();
+                    g.DrawImage(MandelBitmap, 10, 10, MandelBitmap.Width, MandelBitmap.Height);
+                    g.DrawLine(new Pen(Color.PaleGoldenrod, 2F) { CustomEndCap = new AdjustableArrowCap(8, 8) { Filled = false } }, StartedPanPoint, e.Location);
+                }
+                if (IsZooming)
+                {
+                    int zoomarea_x = StartedZoomPoint.X - e.X;
+                    int zoomarea_y = StartedZoomPoint.Y - e.Y;
+
+                    using Graphics g = this.CreateGraphics();
+
+                    if (zoomarea_x > 0 && zoomarea_y > 0) //NW direction drag
+                    {
+                        ZoomRect = new Rectangle(e.X - 10, StartedZoomPoint.Y - Math.Abs(zoomarea_x) * 3 / 4 - 10, Math.Abs(zoomarea_x), Math.Abs(zoomarea_x) * 3 / 4);
+                    }
+                    else if (zoomarea_x > 0 && zoomarea_y < 0) //SW direction drag
+                    {
+                        ZoomRect = new Rectangle(e.X - 10, StartedZoomPoint.Y - 10, Math.Abs(zoomarea_x), Math.Abs(zoomarea_x) * 3 / 4);
+                    }
+                    else if (zoomarea_x < 0 && zoomarea_y > 0) //NE direction drag
+                    {
+                        ZoomRect = new Rectangle(StartedZoomPoint.X - 10, StartedZoomPoint.Y - Math.Abs(zoomarea_x) * 3 / 4 - 10, Math.Abs(zoomarea_x), Math.Abs(zoomarea_x) * 3 / 4);
+                    }
+                    else if (zoomarea_x < 0 && zoomarea_y < 0) //SE direction drag
+                    {
+                        ZoomRect = new Rectangle(StartedZoomPoint.X - 10, StartedZoomPoint.Y - 10, Math.Abs(zoomarea_x), Math.Abs(zoomarea_x) * 3 / 4);
+                    }
+                    else
+                    {
+                        ZoomRect = new Rectangle();
+                        return; //dodgy rectangle by user
+                    }
+                    ZoomRectScreen = new Rectangle(ZoomRect.X + 10, ZoomRect.Y + 10, ZoomRect.Width, ZoomRect.Height);
+                    if (VisualiserArea.Contains(ZoomRectScreen))
+                    {
+                        g.DrawImage(MandelBitmap, 10, 10, MandelBitmap.Width, MandelBitmap.Height);
+                        g.DrawRectangle(new Pen(Color.AntiqueWhite, 1F), ZoomRectScreen);
+                    }
+                    else
+                    {
+                        return; //zoomrect outof bounds
+                    }
+                }
+            }
+            else
+            {
+                lblMousePos.Text = "Mouse Position: Out of visualiser area bounds.";
+            }
+
         }
 
         private void Mandelbrot_MouseDown(object sender, MouseEventArgs e)
         {
-            if (!IsComputing && e.Button == MouseButtons.Left && InPanMode)
+            if (VisualiserArea.Contains(e.Location))
             {
-                IsPanning = true;
-                StartedPanPoint = e.Location;
+                if (!IsComputing && e.Button == MouseButtons.Left && InPanMode)
+                {
+                    IsPanning = true;
+                    StartedPanPoint = e.Location;
+                }
+                if (!IsComputing && e.Button == MouseButtons.Left && InZoomMode)
+                {
+                    IsZooming = true;
+                    StartedZoomPoint = e.Location;
+                }
             }
         }
 
         private void Mandelbrot_MouseUp(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left && IsPanning && InPanMode && ViewStack.CurrentSize > 0) //checking if initial view loaded at least
+            if (VisualiserArea.Contains(e.Location))
             {
-                IsPanning = false;
-                IsComputing = true;
-                this.Cursor = Cursors.WaitCursor;
-
-                StoppedPanPoint = e.Location;
-                panx = Math.Min(StoppedPanPoint.X - StartedPanPoint.X, VisualiserArea.Width - 1);
-                pany = Math.Min(StoppedPanPoint.Y - StartedPanPoint.Y, VisualiserArea.Height - 1);
-
-                if (panx == 0 && pany == 0) //both are 0
+                if (e.Button == MouseButtons.Left && IsPanning && InPanMode && ViewStack.CurrentSize > 0) //checking if initial view loaded at least
                 {
-                    IsComputing = false;
+                    IsPanning = false;
+                    IsComputing = true;
+
+                    StoppedPanPoint = e.Location;
+                    panx = Math.Min(StoppedPanPoint.X - StartedPanPoint.X, VisualiserArea.Width - 1);
+                    pany = Math.Min(StoppedPanPoint.Y - StartedPanPoint.Y, VisualiserArea.Height - 1);
+
+                    if (panx == 0 && pany == 0) //both are 0
+                    {
+                        IsComputing = false;
+                        this.Cursor = Cursors.SizeAll;
+                        return;
+                    }
+
+                    if (!IsValidIterCount())
+                    {
+                        txtIterCount.Text = "250";
+                        MaxIter = 250;
+                    }
+                    else
+                    {
+                        MaxIter = Convert.ToInt16(txtIterCount.Text);
+                    }
+
+                    double xdif = TopRight.x - BottomLeft.x;
+                    double ydif = TopRight.y - BottomLeft.y;
+
+                    TopRight = new ComplexNumber(TopRight.x - (TopRight.x - BottomLeft.x) * (float)panx / VisualiserArea.Width,
+                                                     TopRight.y + (TopRight.y - BottomLeft.y) * (float)pany / VisualiserArea.Height);
+                    BottomLeft = new ComplexNumber((float)(TopRight.x - xdif), (float)(TopRight.y - ydif));
+
+                    bkgDrawThread = new Thread(GenerateNewImage);
+                    bkgDrawThread.Start();
+                    bkgDrawThread = null;
+
                     this.Cursor = Cursors.SizeAll;
                     return;
                 }
-
-                double xdif = TopRight.x - BottomLeft.x;
-                double ydif = TopRight.y - BottomLeft.y;
-
-                if (panx > 0 && pany > 0) //SE direction
+                if (e.Button == MouseButtons.Left && IsZooming && InZoomMode && ViewStack.CurrentSize > 0)
                 {
-                    TopRight = new ComplexNumber(TopRight.x - (TopRight.x - BottomLeft.x) * (float)panx / VisualiserArea.Width,
-                                                    TopRight.y + (TopRight.y - BottomLeft.y) * (float)pany / VisualiserArea.Height);
+                    IsZooming = false;
+                    IsComputing = true;
+
+                    if (!IsValidIterCount())
+                    {
+                        txtIterCount.Text = "250";
+                        MaxIter = 250;
+                    }
+                    else
+                    {
+                        MaxIter = Convert.ToInt16(txtIterCount.Text);
+                    }
+
+                    Point tempTopRightPixelCoord = new(ZoomRect.X + ZoomRect.Width, ZoomRect.Y);
+                    Point tempBottomLeftPixelCoord = new(ZoomRect.X, ZoomRect.Y + ZoomRect.Height);
+                    ComplexNumber tempTopRight = new(TopRight.x, TopRight.y);
+                    TopRight = new ComplexNumber((float)tempTopRightPixelCoord.X / (float)this.VisualiserArea.Width * (TopRight.x - BottomLeft.x) + BottomLeft.x, (float)(this.VisualiserArea.Height - tempTopRightPixelCoord.Y) / (float)this.VisualiserArea.Height * (TopRight.y - BottomLeft.y) + BottomLeft.y);
+                    BottomLeft = new ComplexNumber((float)tempBottomLeftPixelCoord.X / (float)this.VisualiserArea.Width * (tempTopRight.x - BottomLeft.x) + BottomLeft.x, (float)(this.VisualiserArea.Height - tempBottomLeftPixelCoord.Y) / (float)this.VisualiserArea.Height * (tempTopRight.y - BottomLeft.y) + BottomLeft.y);
+
+                    bkgDrawThread = new Thread(GenerateNewImage);
+                    bkgDrawThread.Start();
+                    bkgDrawThread = null;
                 }
-                if (panx > 0 && pany < 0) //NE direction 
-                {
-                    pany = Math.Abs(pany);
-
-                    TopRight = new ComplexNumber(TopRight.x - (TopRight.x - BottomLeft.x) * (float)panx / VisualiserArea.Width,
-                                                   TopRight.y - (TopRight.y - BottomLeft.y) * (float)pany / VisualiserArea.Height);
-                }
-                if (panx < 0 && pany < 0) //NW direction
-                {
-                    panx = Math.Abs(panx);
-                    pany = Math.Abs(pany);
-
-                    TopRight = new ComplexNumber(TopRight.x + (TopRight.x - BottomLeft.x) * (float)panx / VisualiserArea.Width,
-                                                    TopRight.y - (TopRight.y - BottomLeft.y) * (float)pany / VisualiserArea.Height);
-                }
-                if (panx < 0 && pany > 0) //SW direction
-                {
-                    panx = Math.Abs(panx);
-
-                    TopRight = new ComplexNumber(TopRight.x + (TopRight.x - BottomLeft.x) * (float)panx / VisualiserArea.Width,
-                                                   TopRight.y + (TopRight.y - BottomLeft.y) * (float)pany / VisualiserArea.Height);
-                }
-                if (panx > 0 && pany == 0) //E direction
-                {
-                    TopRight = new ComplexNumber(TopRight.x + (TopRight.x - BottomLeft.x) * (float)panx / VisualiserArea.Width,
-                                                   TopRight.y);
-                }
-                if (panx < 0 && pany == 0) //W direction
-                {
-                    panx = Math.Abs(panx);
-
-                    TopRight = new ComplexNumber(TopRight.x - (TopRight.x - BottomLeft.x) * (float)panx / VisualiserArea.Width,
-                                                   TopRight.y);
-                }
-                if (panx == 0 && pany < 0) //N direction
-                {
-                    pany = Math.Abs(pany);
-
-                    TopRight = new ComplexNumber(TopRight.x,
-                                                   TopRight.y - (TopRight.y - BottomLeft.y) * (float)pany / VisualiserArea.Height);
-                }
-                if (panx == 0 && pany > 0) //S direction
-                {
-                    TopRight = new ComplexNumber(TopRight.x,
-                                                 TopRight.y + (TopRight.y - BottomLeft.y) * (float)pany / VisualiserArea.Height);
-                }
-
-                BottomLeft = new ComplexNumber((float)(TopRight.x - xdif), (float)(TopRight.y - ydif));
-
-
-                GenerateNewImage();
-                //draw the bastard
-
-                this.Cursor = Cursors.SizeAll;
-                return;
             }
+
         }
 
+        private bool IsValidIterCount()
+        {
+            int IterCount;
+            Regex regex = new("[1-9]+[0-9]*");
+            if (!regex.IsMatch(txtIterCount.Text))
+            {
+                return false;
+            }
+            IterCount = Convert.ToInt16(txtIterCount.Text);
+            if (IterCount > 1000 || IterCount <= 0)
+            {
+                return false;
+            }
+            return true;
+        }
+
+
+        private void Mandelbrot_Shown(object sender, EventArgs e)
+        {
+            bkgDrawThread = new Thread(GenerateNewImage);
+            bkgDrawThread.Start();
+            bkgDrawThread = null;
+            txtIterCount.Text = MaxIter.ToString();
+        }
     }
 }

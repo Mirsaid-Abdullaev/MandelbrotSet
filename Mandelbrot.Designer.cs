@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Mandelbrot));
             lblMousePos = new Label();
             btnPanMode = new Button();
             btnUndoView = new Button();
@@ -35,89 +36,140 @@
             btnClear = new Button();
             btnZoomMode = new Button();
             btnDefaultView = new Button();
+            lblTimer = new Label();
+            lblShowTime = new Label();
+            label1 = new Label();
+            txtIterCount = new TextBox();
             SuspendLayout();
             // 
             // lblMousePos
             // 
             lblMousePos.AutoSize = true;
+            lblMousePos.BorderStyle = BorderStyle.FixedSingle;
             lblMousePos.Font = new Font("Bahnschrift", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            lblMousePos.Location = new Point(3, 609);
+            lblMousePos.Location = new Point(12, 614);
             lblMousePos.Name = "lblMousePos";
-            lblMousePos.Size = new Size(90, 19);
+            lblMousePos.Size = new Size(92, 21);
             lblMousePos.TabIndex = 0;
             lblMousePos.Text = "MousePos: ";
             // 
             // btnPanMode
             // 
-            btnPanMode.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnPanMode.Location = new Point(819, 76);
+            btnPanMode.BackColor = Color.DodgerBlue;
+            btnPanMode.Font = new Font("Bahnschrift", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btnPanMode.Location = new Point(820, 199);
             btnPanMode.Name = "btnPanMode";
-            btnPanMode.Size = new Size(84, 27);
+            btnPanMode.Size = new Size(90, 57);
             btnPanMode.TabIndex = 4;
-            btnPanMode.Text = "Pan Mode";
-            btnPanMode.UseVisualStyleBackColor = true;
-            btnPanMode.Click += btnPanMode_Click;
+            btnPanMode.Text = "Toggle Pan Mode";
+            btnPanMode.UseVisualStyleBackColor = false;
+            btnPanMode.Click += BtnPanMode_Click;
             // 
             // btnUndoView
             // 
-            btnUndoView.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnUndoView.Location = new Point(819, 175);
+            btnUndoView.BackColor = Color.DodgerBlue;
+            btnUndoView.Font = new Font("Bahnschrift", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btnUndoView.Location = new Point(820, 325);
             btnUndoView.Name = "btnUndoView";
-            btnUndoView.Size = new Size(84, 27);
+            btnUndoView.Size = new Size(90, 57);
             btnUndoView.TabIndex = 5;
             btnUndoView.Text = "Undo/Go Back";
-            btnUndoView.UseVisualStyleBackColor = true;
-            btnUndoView.Click += btnUndoView_Click;
+            btnUndoView.UseVisualStyleBackColor = false;
+            btnUndoView.Click += BtnUndoView_Click;
             // 
             // btnSaveJPG
             // 
-            btnSaveJPG.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnSaveJPG.Location = new Point(819, 43);
+            btnSaveJPG.BackColor = Color.DodgerBlue;
+            btnSaveJPG.Font = new Font("Bahnschrift", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btnSaveJPG.Location = new Point(820, 74);
             btnSaveJPG.Name = "btnSaveJPG";
-            btnSaveJPG.Size = new Size(84, 27);
+            btnSaveJPG.Size = new Size(90, 57);
             btnSaveJPG.TabIndex = 6;
-            btnSaveJPG.Text = "Save to JPG";
-            btnSaveJPG.UseVisualStyleBackColor = true;
-            btnSaveJPG.Click += btnSaveJPG_Click;
+            btnSaveJPG.Text = "Save Current to JPG";
+            btnSaveJPG.UseVisualStyleBackColor = false;
+            btnSaveJPG.Click += BtnSaveJPG_Click;
             // 
             // btnClear
             // 
-            btnClear.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnClear.Location = new Point(819, 10);
+            btnClear.BackColor = Color.DodgerBlue;
+            btnClear.Font = new Font("Bahnschrift", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btnClear.Location = new Point(820, 11);
             btnClear.Name = "btnClear";
-            btnClear.Size = new Size(84, 27);
+            btnClear.Size = new Size(90, 57);
             btnClear.TabIndex = 7;
             btnClear.Text = "Clear Screen";
-            btnClear.UseVisualStyleBackColor = true;
-            btnClear.Click += btnClear_Click;
+            btnClear.UseVisualStyleBackColor = false;
+            btnClear.Click += BtnClear_Click;
             // 
             // btnZoomMode
             // 
-            btnZoomMode.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnZoomMode.Location = new Point(819, 109);
+            btnZoomMode.BackColor = Color.DodgerBlue;
+            btnZoomMode.Font = new Font("Bahnschrift", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btnZoomMode.Location = new Point(820, 137);
             btnZoomMode.Name = "btnZoomMode";
-            btnZoomMode.Size = new Size(84, 27);
+            btnZoomMode.Size = new Size(90, 57);
             btnZoomMode.TabIndex = 8;
-            btnZoomMode.Text = "Zoom Mode";
-            btnZoomMode.UseVisualStyleBackColor = true;
-            btnZoomMode.Click += btnZoomMode_Click;
+            btnZoomMode.Text = "Toggle Zoom Mode";
+            btnZoomMode.UseVisualStyleBackColor = false;
+            btnZoomMode.Click += BtnZoomMode_Click;
             // 
             // btnDefaultView
             // 
-            btnDefaultView.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
-            btnDefaultView.Location = new Point(819, 142);
+            btnDefaultView.BackColor = Color.DodgerBlue;
+            btnDefaultView.Font = new Font("Bahnschrift", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btnDefaultView.Location = new Point(820, 262);
             btnDefaultView.Name = "btnDefaultView";
-            btnDefaultView.Size = new Size(84, 27);
+            btnDefaultView.Size = new Size(90, 57);
             btnDefaultView.TabIndex = 9;
-            btnDefaultView.Text = "Default View";
-            btnDefaultView.UseVisualStyleBackColor = true;
-            btnDefaultView.Click += btnDefaultView_Click;
+            btnDefaultView.Text = "Back to Default View";
+            btnDefaultView.UseVisualStyleBackColor = false;
+            btnDefaultView.Click += BtnDefaultView_Click;
+            // 
+            // lblTimer
+            // 
+            lblTimer.BorderStyle = BorderStyle.FixedSingle;
+            lblTimer.Font = new Font("Bahnschrift SemiLight Condensed", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            lblTimer.Location = new Point(820, 540);
+            lblTimer.Name = "lblTimer";
+            lblTimer.Size = new Size(90, 43);
+            lblTimer.TabIndex = 10;
+            lblTimer.Text = "Last render time (in s):";
+            // 
+            // lblShowTime
+            // 
+            lblShowTime.BorderStyle = BorderStyle.FixedSingle;
+            lblShowTime.Font = new Font("Bahnschrift", 8F, FontStyle.Regular, GraphicsUnit.Point);
+            lblShowTime.Location = new Point(820, 587);
+            lblShowTime.Name = "lblShowTime";
+            lblShowTime.Size = new Size(90, 23);
+            lblShowTime.TabIndex = 11;
+            // 
+            // label1
+            // 
+            label1.BorderStyle = BorderStyle.FixedSingle;
+            label1.Font = new Font("Bahnschrift SemiLight Condensed", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            label1.Location = new Point(820, 464);
+            label1.Name = "label1";
+            label1.Size = new Size(90, 23);
+            label1.TabIndex = 12;
+            label1.Text = "Max Iterations";
+            // 
+            // txtIterCount
+            // 
+            txtIterCount.Location = new Point(820, 490);
+            txtIterCount.Name = "txtIterCount";
+            txtIterCount.Size = new Size(90, 23);
+            txtIterCount.TabIndex = 13;
             // 
             // Mandelbrot
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(7F, 16F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(911, 630);
+            ClientSize = new Size(920, 642);
+            Controls.Add(txtIterCount);
+            Controls.Add(label1);
+            Controls.Add(lblShowTime);
+            Controls.Add(lblTimer);
             Controls.Add(btnDefaultView);
             Controls.Add(btnZoomMode);
             Controls.Add(btnClear);
@@ -125,11 +177,13 @@
             Controls.Add(btnUndoView);
             Controls.Add(btnPanMode);
             Controls.Add(lblMousePos);
+            Font = new Font("Bahnschrift", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             FormBorderStyle = FormBorderStyle.Fixed3D;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             Name = "Mandelbrot";
-            Text = "Mandelbrot";
-            Load += Mandelbrot_Load;
+            Text = "Mandelbrot Visualiser - by Mirsaid Abdullaev";
+            Shown += Mandelbrot_Shown;
             MouseDown += Mandelbrot_MouseDown;
             MouseMove += Mandelbrot_MouseMove;
             MouseUp += Mandelbrot_MouseUp;
@@ -140,13 +194,15 @@
         #endregion
 
         private Label lblMousePos;
-        private Button button1;
-        private Label label1;
         private Button btnPanMode;
         private Button btnUndoView;
         private Button btnSaveJPG;
         private Button btnClear;
         private Button btnZoomMode;
         private Button btnDefaultView;
+        private Label lblTimer;
+        private Label lblShowTime;
+        private Label label1;
+        private TextBox txtIterCount;
     }
 }

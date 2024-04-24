@@ -8,29 +8,19 @@ namespace MandelbrotSet
         [STAThread]
         static void Main()
         {
-            //int Resolution;
-            //int MaxIter;
             ApplicationConfiguration.Initialize();
 
-            //InitialiseVisualiser initialiseVisualiser = new InitialiseVisualiser();
-            //Application.Run(initialiseVisualiser);
-
-            //try
-            //{
-            //    Resolution = initialiseVisualiser.Resolution;
-            //    MaxIter = initialiseVisualiser.MaxIter;
-            //}
-            //catch
-            //{
-            //    Resolution = 200;
-            //    MaxIter = 250
-            //}
-            //initialiseVisualiser.Dispose();
-
-            Mandelbrot mandelbrotViewer = new(100);
-            Application.Run(mandelbrotViewer);
-
-          
+            InitialiseVisualiser initialiseVisualiser = new();
+            Application.Run(initialiseVisualiser);
+            if (initialiseVisualiser.UserClosed)
+            {
+                initialiseVisualiser.Dispose();
+            }
+            else
+            {
+                Mandelbrot mandelbrotViewer = new(250);
+                Application.Run(mandelbrotViewer);
+            }
         }
     }
 }
