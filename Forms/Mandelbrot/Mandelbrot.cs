@@ -117,8 +117,6 @@ namespace MandelbrotSet
                 }
             }
             g.DrawImage(MandelBitmap, VisualiserArea.Location);
-            CurrentState currentState = new CurrentState(TopRight, BottomLeft, MaxIter);
-            ViewStack.Push(currentState);
             stopwatch.Stop();
             lblShowTime.Text = Math.Round(stopwatch.Elapsed.TotalSeconds, 5).ToString();
             this.Cursor = Cursors.Default;
@@ -174,7 +172,6 @@ namespace MandelbrotSet
             {
                 btnUndoView.BackColor = Color.Goldenrod;
                 CurrentState previousState = ViewStack.Pop();
-                previousState = ViewStack.Pop();
                 TopRight = previousState.TopRightScaled;
                 BottomLeft = previousState.BottomLeftScaled;
                 MaxIter = previousState.MaxIter;
@@ -398,6 +395,9 @@ namespace MandelbrotSet
                     double xdif = TopRight.x - BottomLeft.x;
                     double ydif = TopRight.y - BottomLeft.y;
 
+                    CurrentState currentState = new CurrentState(TopRight, BottomLeft, MaxIter);
+                    ViewStack.Push(currentState);
+
                     TopRight = new ComplexNumber(TopRight.x - (TopRight.x - BottomLeft.x) * (float)panx / VisualiserArea.Width,
                                                      TopRight.y + (TopRight.y - BottomLeft.y) * (float)pany / VisualiserArea.Height);
                     BottomLeft = new ComplexNumber((float)(TopRight.x - xdif), (float)(TopRight.y - ydif));
@@ -427,6 +427,10 @@ namespace MandelbrotSet
                     Point tempTopRightPixelCoord = new Point(ZoomRect.X + ZoomRect.Width, ZoomRect.Y);
                     Point tempBottomLeftPixelCoord = new Point(ZoomRect.X, ZoomRect.Y + ZoomRect.Height);
                     ComplexNumber tempTopRight = new ComplexNumber(TopRight.x, TopRight.y);
+
+                    CurrentState currentState = new CurrentState(TopRight, BottomLeft, MaxIter);
+                    ViewStack.Push(currentState);
+
                     TopRight = new ComplexNumber((float)tempTopRightPixelCoord.X / (float)this.VisualiserArea.Width * (TopRight.x - BottomLeft.x) + BottomLeft.x, (float)(this.VisualiserArea.Height - tempTopRightPixelCoord.Y) / (float)this.VisualiserArea.Height * (TopRight.y - BottomLeft.y) + BottomLeft.y);
                     BottomLeft = new ComplexNumber((float)tempBottomLeftPixelCoord.X / (float)this.VisualiserArea.Width * (tempTopRight.x - BottomLeft.x) + BottomLeft.x, (float)(this.VisualiserArea.Height - tempBottomLeftPixelCoord.Y) / (float)this.VisualiserArea.Height * (tempTopRight.y - BottomLeft.y) + BottomLeft.y);
 
@@ -447,6 +451,8 @@ namespace MandelbrotSet
         private void Mandelbrot_Shown(object sender, EventArgs e)
         {
             checkBox1.Checked = true;
+            CurrentState currentState = new CurrentState(TopRight, BottomLeft, MaxIter);
+            ViewStack.Push(currentState);
             bkgDrawThread = new Thread(GenerateNewImage);
             bkgDrawThread.Start();
             bkgDrawThread = null;
