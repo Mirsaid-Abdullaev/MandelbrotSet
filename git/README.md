@@ -4,17 +4,17 @@ Welcome to the Mandelbrot Set Visualizer!
 
 ## Introduction
 
-The Mandelbrot Set is a fascinating mathematical object that showcases the beauty of fractal geometry. It is derived from a simple iterative equation involving complex numbers. The set is defined as the collection of complex numbers \( c \) for which the iteration \( z_{n+1} = z_{n}^2 + c \) remains bounded as \( n \) approaches infinity, starting with \( z_0 = 0 \).
+The Mandelbrot Set is a fascinating mathematical object that showcases the beauty of fractal geometry. It is derived from a simple iterative equation involving complex numbers. The set is defined as the collection of complex numbers  `c` for which the iteration `z_{n+1} = z_{n}^2 + c` remains bounded as `n` approaches infinity, starting with `z_0 = 0`.
 
 ## Equations
 
 The Mandelbrot Set can be explored using the following equations:
 
 1. **Mandelbrot iteration**: 
-   \[ z_{n+1} = z_{n}^2 + c \]
+   `z_{n+1} = z_{n}^2 + c`
    
 2. **Escape criterion**:
-   \[ |z_n| \leq 2 \]
+   `|z_n| \leq 2`
 
 ## How to Use
 
