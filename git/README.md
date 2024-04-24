@@ -1,24 +1,24 @@
-# Mandelbrot Set Visualizer
+# Mandelbrot Set Visualiser
 
-Welcome to the Mandelbrot Set Visualizer! 
+Welcome to the Mandelbrot Set Visualiser! 
 
 ## Introduction
 
-The Mandelbrot Set is a fascinating mathematical object that showcases the beauty of fractal geometry. It is derived from a simple iterative equation involving complex numbers. The set is defined as the collection of complex numbers  `c` for which the iteration `z_{n+1} = z_{n}^2 + c` remains bounded as `n` approaches infinity, starting with `z_0 = 0`.
+The Mandelbrot Set is a fascinating mathematical object that showcases the beauty of fractal geometry. It is derived from a simple iterative equation involving complex numbers. The set is defined as the collection of complex numbers c for which the iteration z_{n+1} = z_{n}^2 + c remains bounded as n approaches infinity, starting with z_0 = 0.
 
 ## Equations
 
 The Mandelbrot Set can be explored using the following equations:
 
 1. **Mandelbrot iteration**: 
-   `z_{n+1} = z_{n}^2 + c`
+   z_{n+1} = z_{n}^2 + c
    
 2. **Escape criterion**:
-   `|z_n| \leq 2`
+   |z_n| \leq 2
 
 ## How to Use
 
-To use this Mandelbrot Set Visualizer, simply [download](link_to_download) or clone the repository, compile the code, and run the application. The code contains support for .NET 6.0, .NET 7.0, .NET 8.0 and .NET Core 3.1.
+To use this Mandelbrot Set Visualiser, simply [download](link_to_download) or clone the repository, compile the code, and run the application. The code contains support for .NET 6.0, .NET 7.0, .NET 8.0 and .NET Core 3.1.
 
 You'll be able to explore the Mandelbrot Set by zooming in and out, adjusting parameters, panning and saving images of views to local storage.
 
