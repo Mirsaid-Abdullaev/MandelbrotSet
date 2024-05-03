@@ -6,7 +6,7 @@ Welcome to the Mandelbrot Set Visualiser!
 
 The Mandelbrot Set is a fascinating mathematical object that showcases the beauty of fractal geometry. It is derived from a simple iterative equation involving complex numbers. The set is defined as the collection of complex numbers \( c \) for which the iteration:
 ![Mandelbrot equation](https://latex.codecogs.com/png.image?\dpi{120}&space;\bg_white&space;z_{n&plus;1}&space;=&space;z_{n}^2&space;&plus;&space;c)
-remains bounded as `n` approaches infinity, starting with z(0) = 0.
+remains bounded as `n` approaches infinity, starting with `z(0) = 0`.
 
 This set is explored iteratively using the above equation, along with the escape criterion:
 

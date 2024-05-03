@@ -36,12 +36,12 @@ namespace MandelbrotSet
         private bool IsPanning;
         private bool IsZooming;
 
-        private Point StartedPanPoint;
-        private Point StoppedPanPoint;
-        private int panx;
-        private int pany;
+        private PointF StartedPanPoint;
+        private PointF StoppedPanPoint;
+        private float panx;
+        private float pany;
 
-        private Point StartedZoomPoint;
+        private PointF StartedZoomPoint;
         private Rectangle ZoomRect;
         private Rectangle ZoomRectScreen;
 
@@ -303,26 +303,26 @@ namespace MandelbrotSet
                 }
                 if (IsZooming)
                 {
-                    int zoomarea_x = StartedZoomPoint.X - e.X;
-                    int zoomarea_y = StartedZoomPoint.Y - e.Y;
+                    float zoomarea_x = StartedZoomPoint.X - e.X;
+                    float zoomarea_y = StartedZoomPoint.Y - e.Y;
 
                     using Graphics g = this.CreateGraphics();
 
                     if (zoomarea_x > 0 && zoomarea_y > 0) //NW direction drag
                     {
-                        ZoomRect = new Rectangle(e.X - 10, StartedZoomPoint.Y - Math.Abs(zoomarea_x) * 3 / 4 - 10, Math.Abs(zoomarea_x), Math.Abs(zoomarea_x) * 3 / 4);
+                        ZoomRect = new Rectangle(e.X - 10, (int)(StartedZoomPoint.Y - Math.Abs(zoomarea_x) * 3 / 4 - 10), (int)Math.Abs(zoomarea_x), (int)(Math.Abs(zoomarea_x) * 3 / 4));
                     }
                     else if (zoomarea_x > 0 && zoomarea_y < 0) //SW direction drag
                     {
-                        ZoomRect = new Rectangle(e.X - 10, StartedZoomPoint.Y - 10, Math.Abs(zoomarea_x), Math.Abs(zoomarea_x) * 3 / 4);
+                        ZoomRect = new Rectangle(e.X - 10, (int)(StartedZoomPoint.Y - 10), (int)Math.Abs(zoomarea_x), (int)(Math.Abs(zoomarea_x) * 3 / 4));
                     }
                     else if (zoomarea_x < 0 && zoomarea_y > 0) //NE direction drag
                     {
-                        ZoomRect = new Rectangle(StartedZoomPoint.X - 10, StartedZoomPoint.Y - Math.Abs(zoomarea_x) * 3 / 4 - 10, Math.Abs(zoomarea_x), Math.Abs(zoomarea_x) * 3 / 4);
+                        ZoomRect = new Rectangle((int)(StartedZoomPoint.X - 10), (int)(StartedZoomPoint.Y - Math.Abs(zoomarea_x) * 3 / 4 - 10), (int)Math.Abs(zoomarea_x), (int)(Math.Abs(zoomarea_x) * 3 / 4));
                     }
                     else if (zoomarea_x < 0 && zoomarea_y < 0) //SE direction drag
                     {
-                        ZoomRect = new Rectangle(StartedZoomPoint.X - 10, StartedZoomPoint.Y - 10, Math.Abs(zoomarea_x), Math.Abs(zoomarea_x) * 3 / 4);
+                        ZoomRect = new Rectangle((int)(StartedZoomPoint.X - 10), (int)(StartedZoomPoint.Y - 10), (int)Math.Abs(zoomarea_x), (int)(Math.Abs(zoomarea_x) * 3 / 4));
                     }
                     else
                     {
@@ -372,7 +372,7 @@ namespace MandelbrotSet
                     IsComputing = true;
 
                     StoppedPanPoint = e.Location;
-                    panx = Math.Min(StoppedPanPoint.X - StartedPanPoint.X, VisualiserArea.Width - 1);
+                    panx = (int)Math.Min(StoppedPanPoint.X - StartedPanPoint.X, VisualiserArea.Width - 1);
                     pany = Math.Min(StoppedPanPoint.Y - StartedPanPoint.Y, VisualiserArea.Height - 1);
 
                     if (panx == 0 && pany == 0) //both are 0

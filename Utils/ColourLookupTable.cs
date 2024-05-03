@@ -22,17 +22,17 @@ namespace MandelbrotSet.Utils
             for (int i = 0; i < MaxIter; i++)
             {
                 double ColourReturnValue = Math.Pow(Math.Pow((double)i / (double)MaxIter, 0.9) * MaxIter, 1.5) % 360 / 360;
-                ColourTable[0][i] = Util.HSLToRGB(ColourReturnValue, 0.9, (double) i / (double) MaxIter);
+                ColourTable[0][i] = Design.HSLToRGB(ColourReturnValue, 0.9, (double) i / (double) MaxIter);
             }
             for (int i = 0; i < MaxIter; i++)
             {
                 double ColourReturnValue = Math.Pow(SmoothIteration(i), 0.25);
-                ColourTable[1][i] = Util.HSLToRGB(ColourReturnValue, 0.75, 0.5);
+                ColourTable[1][i] = Design.HSLToRGB(ColourReturnValue, 0.75, 0.5);
             }
             for (int i = 0; i < MaxIter; i++)
             {
                 double ColourReturnValue = (double)i / MaxIter;
-                ColourTable[2][i] = Util.HSLToRGB((double)Math.Pow(ColourReturnValue, 0.25), 0.7, 0.6);
+                ColourTable[2][i] = Design.HSLToRGB((double)Math.Pow(ColourReturnValue, 0.25), 0.7, 0.6);
             }
         }
         private static double SmoothIteration(double i)

@@ -6,11 +6,6 @@ using System.Threading;
 using System.Windows.Forms;
 namespace MandelbrotSet.Utils
 {
-    internal class PixelCoord
-    {
-        public int XPixel;
-        public int YPixel;
-    }
     internal class ScaledToPixelTranslator
     {
         private readonly double PPSU_X; //constant used for holding the pixels per scaled coord unit (x-direction)
