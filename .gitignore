@@ -15,6 +15,7 @@
 
 # Mono auto generated files
 mono_crash.*
+
 bin/Debug
 bin/Release
 obj/Debug
@@ -368,3 +369,12 @@ FodyWeavers.xsd
 /MandelbrotSet.sln
 /Properties/.editorconfig
 /Properties/Resources.resx
+/MandelbrotSet.csproj
+/.vs/ProjectEvaluation/mandelbrotset.metadata.v7.bin
+/.vs/ProjectEvaluation/mandelbrotset.projects.v7.bin
+/.vs/MandelbrotSet/v17/.futdcache.v2
+/.vs/MandelbrotSet/v17/.suo
+/.vs/MandelbrotSet/FileContentIndex/21ddc5c7-b8bd-4336-9dc0-df39af86924d.vsidx
+/.vs/MandelbrotSet/FileContentIndex/4552878d-8596-44d7-aa23-25c3d8b5e4c7.vsidx
+/.vs/MandelbrotSet/DesignTimeBuild/.dtbcache.v2
+/.vs/MandelbrotSet/FileContentIndex/77520a6f-d0c9-429d-8c37-97162bbf9a23.vsidx
