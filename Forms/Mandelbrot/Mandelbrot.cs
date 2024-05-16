@@ -23,7 +23,7 @@ namespace MandelbrotSet
         private readonly Utils.Stack<CurrentState> ViewStack; //the stack that holds the parameters of the previous view
         private readonly Stopwatch stopwatch; //for timing each drawing operation
         private Thread bkgDrawThread; //the thread used to draw the mandelbrot set on to allow the main GUI to be responsive while drawing taking place
-        
+
         private int MaxIter; //maximum iterations for the current view
         private int ColorPalette; //int for which colour palette is currently being used
 
@@ -75,7 +75,7 @@ namespace MandelbrotSet
             if (ColourTable.MaxIterations != MaxIter)
             {
                 ColourTable = new ColourLookupTable(MaxIter);
-            } 
+            }
 
             double ModSquared = 0;
             Color CurrColor;
@@ -362,6 +362,7 @@ namespace MandelbrotSet
                 {
                     IsZooming = true;
                     StartedZoomPoint = e.Location;
+                    
                 }
             }
         }
@@ -408,7 +409,7 @@ namespace MandelbrotSet
                     bkgDrawThread = new Thread(GenerateNewImage);
                     bkgDrawThread.Start();
                     bkgDrawThread = null;
-                    lblAspectRatio.Text = $"Aspect Ratio: { (TopRight.x - BottomLeft.x) / (TopRight.y - BottomLeft.y)}";
+                    lblAspectRatio.Text = $"Aspect Ratio: {(TopRight.x - BottomLeft.x) / (TopRight.y - BottomLeft.y)}";
                     this.Cursor = Cursors.SizeAll;
                     return;
                 }
@@ -446,7 +447,7 @@ namespace MandelbrotSet
         }
         private void Mandelbrot_Paint(object sender, PaintEventArgs e)
         {
-            if (!IsComputing)
+            if (!IsComputing & !IsPanning & !IsZooming)
             {
                 using Graphics g = this.CreateGraphics();
                 g.DrawImage(MandelBitmap, VisualiserArea.Location);
