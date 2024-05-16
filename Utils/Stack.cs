@@ -6,7 +6,7 @@ using System.Threading;
 using System.Windows.Forms;
 namespace MandelbrotSet.Utils
 {
-    internal class Stack<T>
+    internal class Stack<T> //standard implementation of a templated stack
     {
         private int Size;
         public int CurrentSize
@@ -16,25 +16,9 @@ namespace MandelbrotSet.Utils
                 return Size;
             }
         }
-        private readonly int MaxSize;
-        public int GetMaxSize
-        {
-            get
-            {
-                return MaxSize;
-            }
-        }
         private T[] Values;
-        public Stack(bool FixedSize = false, int MaxSize = 250)
+        public Stack()
         {
-            if (FixedSize)
-            {
-                this.MaxSize = MaxSize;
-            }
-            else
-            {
-                this.MaxSize = -1;
-            }
 
             Values = Array.Empty<T>();
             Size = 0;
@@ -58,19 +42,12 @@ namespace MandelbrotSet.Utils
         }
         public void Push(T Item)
         {
-            if (Size == MaxSize)
-            {
-                throw new Exception("Error: stack full.");
-            }
-            else
-            {
-                T[] Temp = new T[Values.Length];
-                Array.Copy(Values, Temp, Values.Length);
-                Values = new T[Values.Length + 1];
-                Array.Copy(Temp, Values, Temp.Length);
-                Values[^1] = Item;
-                Size++;
-            }
+            T[] Temp = new T[Values.Length];
+            Array.Copy(Values, Temp, Values.Length);
+            Values = new T[Values.Length + 1];
+            Array.Copy(Temp, Values, Temp.Length);
+            Values[^1] = Item;
+            Size++;
         }
         public T Peek()
         {
@@ -104,7 +81,7 @@ namespace MandelbrotSet.Utils
         }
         public override string ToString()
         {
-            return "{" + string.Join(',', Values) + "}";
+            return "Stack contents: {" + string.Join(',', Values) + "}";
         }
     }
 }

@@ -22,12 +22,14 @@ namespace MandelbrotSet
             if (initialiseVisualiser.UserClosed)
             {
                 initialiseVisualiser.Dispose();
+                return;
             }
             else
             {
                 Mandelbrot mandelbrotViewer = new Mandelbrot(250);
                 Application.Run(mandelbrotViewer);
             }
+            return;
         }
     }
 }

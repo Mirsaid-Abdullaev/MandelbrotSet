@@ -15,35 +15,35 @@ namespace MandelbrotSet
 {
     public partial class Mandelbrot : Form
     {
-        private readonly Bitmap MandelBitmap;
-        private Rectangle VisualiserArea;
-        private readonly Graphics BitmapG;
-        private ScaledToPixelTranslator? CoordsTranslator;
-        private ColourLookupTable ColourTable;
-        private readonly Utils.Stack<CurrentState> ViewStack;
-        private readonly Stopwatch stopwatch;
-        private Thread? bkgDrawThread;
+        private readonly Bitmap MandelBitmap; //the bitmap holding the bitmap object of the current view
+        private Rectangle VisualiserArea; //the screen rectangle which bounds the drawing area of the form
+        private readonly Graphics BitmapG; //graphics object used to draw the mandelbrot bitmap MandelBitmap
+        private ScaledToPixelTranslator CoordsTranslator; //the utility class that converts from screen pixel coordinates to complex coordinates
+        private ColourLookupTable ColourTable; //the utility class that holds all the precomputed colours mapped to each possible iteration count
+        private readonly Utils.Stack<CurrentState> ViewStack; //the stack that holds the parameters of the previous view
+        private readonly Stopwatch stopwatch; //for timing each drawing operation
+        private Thread bkgDrawThread; //the thread used to draw the mandelbrot set on to allow the main GUI to be responsive while drawing taking place
+        
+        private int MaxIter; //maximum iterations for the current view
+        private int ColorPalette; //int for which colour palette is currently being used
 
-        private int MaxIter;
-        private int ColorPalette;
+        private ComplexNumber TopRight; // complex coordinate of the top right of the visualiser area for the current view
+        private ComplexNumber BottomLeft; //same as above, but for the bottom left
 
-        private ComplexNumber TopRight;
-        private ComplexNumber BottomLeft;
+        private bool IsComputing; //flag to check if currently in the process of zooming/panning/drawing
+        private bool InPanMode; //flag to check if pan mode button active currently
+        private bool InZoomMode; //flag to check if zoom mode button currently active
+        private bool IsPanning; //flag that is true while the user has not released the mouse after clicking and holding within the visualiser area bounds
+        private bool IsZooming; //same as above flag, but when in zoom mode and dragging the mouse without releasing the button
 
-        private bool IsComputing;
-        private bool InPanMode;
-        private bool InZoomMode;
-        private bool IsPanning;
-        private bool IsZooming;
+        private PointF StartedPanPoint; //point to store the initial starting position for the panning operation
+        private PointF StoppedPanPoint; //same as above, but storing the point of release of the mouse in the panning mode
+        private float PanX; //difference of the x coordinates of the start and stop pan screen pixel values
+        private float PanY; //difference of the y coordinates of the start and stop pan screen pixel values
 
-        private PointF StartedPanPoint;
-        private PointF StoppedPanPoint;
-        private float panx;
-        private float pany;
-
-        private PointF StartedZoomPoint;
-        private Rectangle ZoomRect;
-        private Rectangle ZoomRectScreen;
+        private PointF StartedZoomPoint; //same as for the zoom points but storing where the zoom area selection started
+        private Rectangle ZoomRect; //gets a rectangle with the correct aspect ratio size based on the user's drag selected area
+        private Rectangle ZoomRectScreen; //uses the zoomrect to get the correct area to draw the zoom rectangle selection dynamically on the screen
 
         public Mandelbrot(int MaxIter)
         {
@@ -58,6 +58,7 @@ namespace MandelbrotSet
 
             TopRight = new ComplexNumber(2, 1.5);
             BottomLeft = new ComplexNumber(-2, -1.5);
+            CoordsTranslator = new ScaledToPixelTranslator(BitmapG, BottomLeft, TopRight);
             ColourTable = new ColourLookupTable(MaxIter);
             ViewStack = new Utils.Stack<CurrentState>();
             SetControlGradient(this, Colours6);
@@ -179,6 +180,7 @@ namespace MandelbrotSet
                 bkgDrawThread = new Thread(GenerateNewImage);
                 bkgDrawThread.Start();
                 bkgDrawThread = null;
+                lblAspectRatio.Text = $"Aspect Ratio: {(TopRight.x - BottomLeft.x) / (TopRight.y - BottomLeft.y)}";
                 btnUndoView.BackColor = Color.DodgerBlue;
             }
         }
@@ -236,6 +238,7 @@ namespace MandelbrotSet
                 bkgDrawThread = new Thread(GenerateNewImage);
                 bkgDrawThread.Start();
                 bkgDrawThread = null;
+                lblAspectRatio.Text = $"Aspect Ratio: {(TopRight.x - BottomLeft.x) / (TopRight.y - BottomLeft.y)}";
                 btnDefaultView.BackColor = Color.DodgerBlue;
             }
         }
@@ -293,7 +296,7 @@ namespace MandelbrotSet
             {
                 int X = e.X - 10;
                 int Y = e.Y - 10;
-                lblMousePos.Text = $"Mouse Position: ({(float)X / (float)this.VisualiserArea.Width * (TopRight.x - BottomLeft.x) + BottomLeft.x}, {(float)(this.VisualiserArea.Height - Y) / (float)this.VisualiserArea.Height * (TopRight.y - BottomLeft.y) + BottomLeft.y}), Aspect Ratio: {(TopRight.x - BottomLeft.x) / (TopRight.y - BottomLeft.y)}";
+                lblMousePos.Text = $"Mouse Position: ({(float)X / (float)this.VisualiserArea.Width * (TopRight.x - BottomLeft.x) + BottomLeft.x}, {(float)(this.VisualiserArea.Height - Y) / (float)this.VisualiserArea.Height * (TopRight.y - BottomLeft.y) + BottomLeft.y})";
 
                 if (IsPanning)
                 {
@@ -372,10 +375,10 @@ namespace MandelbrotSet
                     IsComputing = true;
 
                     StoppedPanPoint = e.Location;
-                    panx = (int)Math.Min(StoppedPanPoint.X - StartedPanPoint.X, VisualiserArea.Width - 1);
-                    pany = Math.Min(StoppedPanPoint.Y - StartedPanPoint.Y, VisualiserArea.Height - 1);
+                    PanX = (int)Math.Min(StoppedPanPoint.X - StartedPanPoint.X, VisualiserArea.Width - 1);
+                    PanY = Math.Min(StoppedPanPoint.Y - StartedPanPoint.Y, VisualiserArea.Height - 1);
 
-                    if (panx == 0 && pany == 0) //both are 0
+                    if (PanX == 0 && PanY == 0) //both are 0
                     {
                         IsComputing = false;
                         this.Cursor = Cursors.SizeAll;
@@ -398,14 +401,14 @@ namespace MandelbrotSet
                     CurrentState currentState = new CurrentState(TopRight, BottomLeft, MaxIter);
                     ViewStack.Push(currentState);
 
-                    TopRight = new ComplexNumber(TopRight.x - (TopRight.x - BottomLeft.x) * (float)panx / VisualiserArea.Width,
-                                                     TopRight.y + (TopRight.y - BottomLeft.y) * (float)pany / VisualiserArea.Height);
+                    TopRight = new ComplexNumber(TopRight.x - (TopRight.x - BottomLeft.x) * (float)PanX / VisualiserArea.Width,
+                                                     TopRight.y + (TopRight.y - BottomLeft.y) * (float)PanY / VisualiserArea.Height);
                     BottomLeft = new ComplexNumber((float)(TopRight.x - xdif), (float)(TopRight.y - ydif));
 
                     bkgDrawThread = new Thread(GenerateNewImage);
                     bkgDrawThread.Start();
                     bkgDrawThread = null;
-
+                    lblAspectRatio.Text = $"Aspect Ratio: { (TopRight.x - BottomLeft.x) / (TopRight.y - BottomLeft.y)}";
                     this.Cursor = Cursors.SizeAll;
                     return;
                 }
@@ -437,6 +440,7 @@ namespace MandelbrotSet
                     bkgDrawThread = new Thread(GenerateNewImage);
                     bkgDrawThread.Start();
                     bkgDrawThread = null;
+                    lblAspectRatio.Text = $"Aspect Ratio: {(TopRight.x - BottomLeft.x) / (TopRight.y - BottomLeft.y)}";
                 }
             }
         }
@@ -457,6 +461,7 @@ namespace MandelbrotSet
             bkgDrawThread.Start();
             bkgDrawThread = null;
             txtIterCount.Text = MaxIter.ToString();
+            lblAspectRatio.Text = $"Aspect Ratio: {(TopRight.x - BottomLeft.x) / (TopRight.y - BottomLeft.y)}";
         }
     }
 }

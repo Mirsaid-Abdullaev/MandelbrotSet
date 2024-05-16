@@ -8,7 +8,7 @@ using System.Drawing.Drawing2D;
 
 namespace MandelbrotSet.Utils
 {
-    internal static class Design
+    internal static class Design //utility class to colour the forms used with a colour gradient for aesthetics
     {
         public static Color[] Colours1 = new Color[] { Color.FromArgb(44, 62, 80), Color.FromArgb(52, 152, 219) };
         public static Color[] Colours2 = new Color[] { Color.FromArgb(2, 170, 176), Color.FromArgb(1, 181, 175), Color.FromArgb(0, 189, 174), Color.FromArgb(0, 195, 173), Color.FromArgb(0, 205, 172) };
@@ -44,7 +44,7 @@ namespace MandelbrotSet.Utils
             return bitmap;
         }
 
-        public static Color HSLToRGB(double H, double S, double L)
+        public static Color HSLToRGB(double H, double S, double L) //utility sub for converting HSL colour values to the RGB system
         {
             double v;
             double r, g, b;

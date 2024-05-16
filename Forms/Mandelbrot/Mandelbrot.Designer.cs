@@ -49,16 +49,18 @@ namespace MandelbrotSet
             checkBox1 = new CheckBox();
             checkBox2 = new CheckBox();
             checkBox3 = new CheckBox();
+            lblAspectRatio = new Label();
             SuspendLayout();
             // 
             // lblMousePos
             // 
             lblMousePos.AutoSize = true;
-            lblMousePos.BorderStyle = BorderStyle.FixedSingle;
+            lblMousePos.BackColor = Color.Transparent;
             lblMousePos.Font = new Font("Bahnschrift", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            lblMousePos.ForeColor = Color.WhiteSmoke;
             lblMousePos.Location = new Point(12, 614);
             lblMousePos.Name = "lblMousePos";
-            lblMousePos.Size = new Size(92, 21);
+            lblMousePos.Size = new Size(90, 19);
             lblMousePos.TabIndex = 0;
             lblMousePos.Text = "MousePos: ";
             // 
@@ -206,11 +208,24 @@ namespace MandelbrotSet
             checkBox3.UseVisualStyleBackColor = false;
             checkBox3.CheckedChanged += CheckBox3_CheckedChanged;
             // 
+            // lblAspectRatio
+            // 
+            lblAspectRatio.AutoSize = true;
+            lblAspectRatio.BackColor = Color.Transparent;
+            lblAspectRatio.Font = new Font("Bahnschrift", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            lblAspectRatio.ForeColor = Color.WhiteSmoke;
+            lblAspectRatio.Location = new Point(685, 614);
+            lblAspectRatio.Name = "lblAspectRatio";
+            lblAspectRatio.Size = new Size(107, 19);
+            lblAspectRatio.TabIndex = 17;
+            lblAspectRatio.Text = "Aspect Ratio: ";
+            // 
             // Mandelbrot
             // 
             AutoScaleDimensions = new SizeF(7F, 16F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(925, 642);
+            Controls.Add(lblAspectRatio);
             Controls.Add(checkBox3);
             Controls.Add(checkBox2);
             Controls.Add(checkBox1);
@@ -256,5 +271,6 @@ namespace MandelbrotSet
         private CheckBox checkBox1;
         private CheckBox checkBox2;
         private CheckBox checkBox3;
+        private Label lblAspectRatio;
     }
 }
