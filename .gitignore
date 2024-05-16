@@ -370,6 +370,11 @@ FodyWeavers.xsd
 /Properties/.editorconfig
 /Properties/Resources.resx
 /MandelbrotSet.csproj
+/bin/Debug
+/bin/Release
+/obj/Release
+/obj/Debug
+/.vs
 /.vs/ProjectEvaluation/mandelbrotset.metadata.v7.bin
 /.vs/ProjectEvaluation/mandelbrotset.projects.v7.bin
 /.vs/MandelbrotSet/v17/.futdcache.v2
@@ -379,3 +384,4 @@ FodyWeavers.xsd
 /.vs/MandelbrotSet/DesignTimeBuild/.dtbcache.v2
 /.vs/MandelbrotSet/FileContentIndex/77520a6f-d0c9-429d-8c37-97162bbf9a23.vsidx
 /.editorconfig
+/Properties
