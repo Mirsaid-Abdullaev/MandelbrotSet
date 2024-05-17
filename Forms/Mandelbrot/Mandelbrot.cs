@@ -296,7 +296,7 @@ namespace MandelbrotSet
             {
                 int X = e.X - 10;
                 int Y = e.Y - 10;
-                lblMousePos.Text = $"Mouse Position: ({(float)X / (float)this.VisualiserArea.Width * (TopRight.x - BottomLeft.x) + BottomLeft.x}, {(float)(this.VisualiserArea.Height - Y) / (float)this.VisualiserArea.Height * (TopRight.y - BottomLeft.y) + BottomLeft.y})";
+                lblMousePos.Text = $"Mouse Position: ({(float)X / (float)this.VisualiserArea.Width * (TopRight.x - BottomLeft.x) + BottomLeft.x}, {(float)(this.VisualiserArea.Height - Y) / (float)this.VisualiserArea.Height * (TopRight.y - BottomLeft.y) + BottomLeft.y}i)";
 
                 if (IsPanning)
                 {

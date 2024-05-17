@@ -20,13 +20,21 @@ You'll be able to explore the Mandelbrot Set by zooming in and out, adjusting pa
 ## Controls
 
 **Toggle Zoom Mode** - this button when clicked enters the program's zooming mode, where the user can use their mouse to drag and select an interactive area of the visualiser area to zoom into. To exit the zoom mode, click the **Toggle Zoom Mode** button again
+
 **Toggle Pan Mode** - this button similarly enters the program's panning mode, where the user can drag their mouse across the screen to move the image of the Mandelbrot set at that time by the magnitude of the drag and into the direction of the user drag. To exit this mode, similarly click the button again.
+
 **Undo/Go Back** - this button takes the user back to previous view and settings, with the previous value of MaxIterations (if it was different to current) as well as the previous selection of Colour Palette if different. This only works if at least one action has been performed from the initial loaded screen view
+
 **Clear Screen** - this button clears the visualiser area when clicked, simple as that
+
 **Save to JPG** - this button allows the user to save the current view of the visualiser as a JPG image into their local storage, with a chosen name
+
 **Back to Default View** - this button resets the parameters to be the same values at startup, this is essentially a reset button if the user zooms in too far or wants to get back to the original point of the Mandelbrot Set
+
 **Palette 1, 2, 3** - these are checkboxes which select the colour palette to colour the Mandelbrot Set in. Once a new colour palette is selected, an operation of some sort must be performed to see the effect of the change, e.g. a Pan or a Zoom
+
 **Max Iterations** - this textbox takes in optional user input for the number of iterations to use as the upper bound to check if a point is in the Mandelbrot Set or not. The higher the value, the larger the RAM usage and render time
+
 
 ## Features
 
