@@ -1,12 +1,12 @@
 # Mandelbrot Set Visualiser
-
+### Written by Mirsaid Abdullaev, 2024
 Welcome to the Mandelbrot Set Visualiser! 
 
 ## Introduction
 
-The Mandelbrot Set is a fascinating mathematical object that showcases the beauty of fractal geometry. It is derived from a simple iterative equation involving complex numbers. The set is defined as the collection of complex numbers \( c \) for which the iteration:
+The Mandelbrot Set is a fascinating mathematical object that showcases the beauty of fractal geometry. It is derived from a simple iterative equation involving complex numbers. The set is defined as the collection of complex numbers ``c ∈ ℂ`` for which the iteration:
 ![Mandelbrot equation](https://latex.codecogs.com/png.image?\dpi{110}&space;\bg_white&space;z_{n&plus;1}&space;=&space;z_{n}^2&space;&plus;&space;c)
-remains bounded as `n` approaches infinity, starting with the initial point of: ![Starting condition](https://latex.codecogs.com/png.image?\dpi{110}&space;\bg_white&space;z_{0}&space;=&space;0&space;&space;+0i) , which is the origin.
+remains bounded as ``n`` approaches infinity, starting with the initial point of: ![Starting condition](https://latex.codecogs.com/png.image?\dpi{110}&space;\bg_white&space;z_{0}&space;=&space;0&space;&space;+0i) , which is the origin.
 
 This set is explored iteratively using the above equation, along with the escape criterion:
 
@@ -46,7 +46,8 @@ You'll be able to explore the Mandelbrot Set by zooming in and out, adjusting pa
 - Modular code allowing for custom colour algorithms to be added
 - Render times shown on screen for each new rendering operation
 - Complex coordinates of the mouse position dynamically updated/printed
-## Examples
+
+## Examples of using the application
 
 ### Initialiser Loading Form
 <img src="/UI/Initialiser.png"></img>
@@ -70,9 +71,9 @@ You'll be able to explore the Mandelbrot Set by zooming in and out, adjusting pa
 <img src="/UI/Visualiser_UI_Saving.png"></img>
 
 ## Contributing
-
 Contributions are welcome! Whether you want to add new features, fix bugs, or improve documentation, feel free to submit a pull request.
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
+### Written by Mirsaid Abdullaev, 2024
+## Contact Details
+### Email: abdullaevm017@gmail.com
+### LinkedIn: www.linkedin.com/in/mirsaid-abdullaev-6a4ab5242/
