@@ -13,7 +13,7 @@ This set is explored iteratively using the above equation, along with the escape
 ![Escape criterion](https://latex.codecogs.com/png.image?\dpi{110}&space;\bg_white&space;|z_n|&space;\leq&space;2) , where ![Bounds on N](https://latex.codecogs.com/png.image?\dpi{100}&space;\bg_white&space;0&space;<&space;n\leq&space;MaxIterations)
 ## How to Setup
 
-To use this Mandelbrot Set Visualiser, simply [download](link_to_download) or clone the repository, compile the code in a Visual Studio project or similar, and run the application. The code contains support for .NET 6.0, .NET 7.0, .NET 8.0 and .NET Core 3.1.
+To use this Mandelbrot Set Visualiser, simply clone the repository, compile the code in a Visual Studio project or similar, and run the application. The code contains support for .NET 6.0, .NET 7.0, .NET 8.0 and .NET Core 3.1 frameworks.
 
 You'll be able to explore the Mandelbrot Set by zooming in and out, adjusting parameters, panning and saving images of views to local storage.
 
